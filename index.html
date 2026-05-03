@@ -141,6 +141,18 @@
     color: var(--muted);
     margin: 4px 0 8px;
   }
+  .today-date {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 2px 0 10px;
+    line-height: 1.2;
+  }
+  .today-date .prefix {
+    color: var(--muted);
+    font-weight: 400;
+    margin-right: 6px;
+  }
   .day-row {
     display: flex;
     gap: 6px;
@@ -530,7 +542,7 @@
 </header>
 
 <section class="controls">
-  <div class="controls-label">Day</div>
+  <div class="today-date" id="todayDate">Today is …</div>
   <div class="day-row" id="dayPicker"></div>
 
   <details class="disclosure" id="rotationDisclosure" open>
@@ -653,14 +665,21 @@ function saveChecks() {
 }
 
 // today's weekday → 0=Mon, 1=Tue, ..., 4=Fri, 5=Sat, 6=Sun
-// On Sat/Sun, default to Monday (the picker only shows Mon-Fri).
 const _todayWeekday = (new Date().getDay() + 6) % 7;
-const todayDayCode = (_todayWeekday <= 4) ? DAY_LIST[_todayWeekday] : 'Mon';
+const todayDayCode = (_todayWeekday <= 4) ? DAY_LIST[_todayWeekday] : null;
 const todayIsWeekend = (_todayWeekday > 4);
+
+function formatToday() {
+  const d = new Date();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return `${days[d.getDay()]} ${months[d.getMonth()]} ${d.getDate()}`;
+}
 
 const persisted = loadState() || {};
 const state = {
-  day: persisted.day || todayDayCode,
+  // Auto-select today on every page load (null on Sat/Sun so nothing is pre-selected)
+  day: todayDayCode,
   selectedRotations: new Set(persisted.rotations || []),
   statFri: !!persisted.statFri,
   statMon: !!persisted.statMon,
@@ -738,6 +757,12 @@ function rowKey(row) {
 // ---------- rendering ----------
 function renderHeader() {
   document.getElementById('version').textContent = 'VERSION ' + APP_DATA.version_date;
+}
+
+function renderTodayDate() {
+  const el = document.getElementById('todayDate');
+  if (!el) return;
+  el.innerHTML = '<span class="prefix">Today is</span>' + formatToday();
 }
 
 function renderDayPicker() {
@@ -831,9 +856,14 @@ function renderTasks() {
   const main = document.getElementById('taskList');
   main.innerHTML = '';
 
+  if (!state.day) {
+    main.innerHTML = '<div class="empty">It’s the weekend. Tap a day above to view that day’s tasks.</div>';
+    updateProgress(0, 0);
+    return;
+  }
   if (state.selectedRotations.size === 0) {
-    main.innerHTML = '<div class="empty"><span class="icon">👋</span>Pick one or more rotations above to see your tasks for ' +
-                     DAY_FULL[state.day].charAt(0).toUpperCase() + DAY_FULL[state.day].slice(1) + '.</div>';
+    const dayName = DAY_FULL[state.day].charAt(0).toUpperCase() + DAY_FULL[state.day].slice(1);
+    main.innerHTML = '<div class="empty">Pick one or more rotations above to see your tasks for ' + dayName + '.</div>';
     updateProgress(0, 0);
     return;
   }
@@ -1048,6 +1078,7 @@ state._loadedKey = todayKey();
 // Initial render
 setTheme(state.theme);
 renderHeader();
+renderTodayDate();
 renderDayPicker();
 renderRotationPicker();
 renderRotationCount();
