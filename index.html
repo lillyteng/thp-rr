@@ -141,14 +141,22 @@
     color: var(--muted);
     margin: 4px 0 8px;
   }
-  /* Search bar */
-  .search-row {
-    position: relative;
-    margin: 6px 0 10px;
+  /* Cascading search dropdowns */
+  .search-stage {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 10px;
   }
-  .search-row input[type="search"] {
+  .search-stage label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+  }
+  .search-stage select {
     width: 100%;
-    padding: 10px 36px 10px 14px;
+    padding: 10px 14px;
     font-size: 15px;
     border: 1px solid var(--border);
     border-radius: 10px;
@@ -156,91 +164,65 @@
     color: var(--text);
     -webkit-appearance: none;
     appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b6b70' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
     box-sizing: border-box;
   }
-  .search-row input[type="search"]:focus {
+  .search-stage select:focus {
     outline: none;
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(68,114,196,0.15);
   }
-  .search-row input[type="search"]::-webkit-search-cancel-button { display: none; }
-  .search-clear {
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    border: none;
-    background: var(--border);
-    color: var(--text);
-    font-size: 11px;
-    cursor: pointer;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
+  .search-stage select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
-  .search-row.has-query .search-clear { display: flex; }
-
-  /* Search results */
-  .search-meta {
+  .search-result {
+    margin-top: 8px;
+    min-height: 0;
+  }
+  .search-result-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .search-result-card[data-site="THP"] { border-left: 4px solid var(--site-thp); }
+  .search-result-card[data-site="CVH"] { border-left: 4px solid var(--site-cvh); }
+  .search-result-card[data-site="MH"]  { border-left: 4px solid var(--site-mh); }
+  .search-result-card[data-site="QHC"] { border-left: 4px solid var(--site-qhc); }
+  .search-result-rotation {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .search-result-meta {
     font-size: 13px;
     color: var(--muted);
-    margin: 0 4px 12px;
+    line-height: 1.5;
   }
-  .search-task-card {
-    background: var(--card);
-    border-radius: 12px;
-    box-shadow: var(--shadow);
-    padding: 12px 14px;
-    margin-bottom: 10px;
-  }
-  .search-task-name {
-    font-weight: 700;
-    font-size: 15px;
-    color: var(--text);
-    margin-bottom: 8px;
-    line-height: 1.3;
-  }
-  .search-result-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 0;
-    border-top: 1px solid var(--border);
+  .search-result-meta b { color: var(--text); font-weight: 600; }
+  .search-result-empty {
+    text-align: center;
+    padding: 14px;
     font-size: 13px;
+    color: var(--muted);
   }
-  .search-result-row:first-of-type { border-top: none; padding-top: 0; }
-  .search-result-row .pill-time {
-    color: white;
-    background: var(--accent);
-    padding: 3px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    white-space: nowrap;
-  }
-  .search-result-row .pill-time.start-time { background: var(--red); }
-  .search-result-row .pill-day {
+  .search-reset-btn {
+    width: 100%;
+    margin-top: 6px;
+    padding: 10px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 10px;
+    font-size: 13px;
     font-weight: 500;
-    color: var(--text);
+    cursor: pointer;
   }
-  .search-result-row .pill-day.stat { color: var(--red); font-weight: 600; }
-  .search-result-row .pill-rot {
-    font-weight: 600;
-    margin-left: auto;
-    padding: 3px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-    color: var(--text);
-  }
-  .search-result-row .pill-rot[data-site="THP"] { background: var(--site-thp-bg); }
-  .search-result-row .pill-rot[data-site="CVH"] { background: var(--site-cvh-bg); }
-  .search-result-row .pill-rot[data-site="MH"]  { background: var(--site-mh-bg); }
-  .search-result-row .pill-rot[data-site="QHC"] { background: var(--site-qhc-bg); }
 
   .today-date {
     font-size: 15px;
@@ -643,11 +625,28 @@
 </header>
 
 <section class="controls">
-  <div class="search-row">
-    <input type="search" id="searchInput" placeholder="Search by task, time, or day"
-           autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
-    <button class="search-clear" id="searchClear" aria-label="Clear search">✕</button>
-  </div>
+  <details class="disclosure" id="searchDisclosure">
+    <summary>
+      <span>Find a rotation by task</span>
+    </summary>
+    <div class="disclosure-body">
+      <div class="search-stage">
+        <label for="searchTask">1. Task</label>
+        <select id="searchTask"><option value="">— Select a task —</option></select>
+      </div>
+      <div class="search-stage">
+        <label for="searchDay">2. Day</label>
+        <select id="searchDay" disabled><option value="">— Pick a task first —</option></select>
+      </div>
+      <div class="search-stage">
+        <label for="searchTime">3. Time</label>
+        <select id="searchTime" disabled><option value="">— Pick a day first —</option></select>
+      </div>
+      <div id="searchResult" class="search-result"></div>
+      <button class="search-reset-btn" id="searchReset">Reset search</button>
+    </div>
+  </details>
+
   <div class="today-date" id="todayDate">Today is …</div>
   <div class="day-row" id="dayPicker"></div>
 
@@ -690,7 +689,6 @@
 </section>
 
 <main id="taskList"></main>
-<main id="searchResults" hidden></main>
 
 <footer>
   <div>Checks reset automatically at midnight.</div>
@@ -1171,108 +1169,187 @@ document.getElementById('themeBtn').addEventListener('click', () => {
   setTheme(state.theme === 'dark' ? 'light' : 'dark');
 });
 
-// ---------- search ----------
-const searchInput = document.getElementById('searchInput');
-const searchClear = document.getElementById('searchClear');
-const searchRow = searchInput.parentElement;
-const taskListEl = document.getElementById('taskList');
-const searchResultsEl = document.getElementById('searchResults');
+// ---------- cascading search: Task → Day → Time → Rotation ----------
+const DAY_OPTIONS = [
+  ['monday',         'Monday'],
+  ['tuesday',        'Tuesday'],
+  ['wednesday',      'Wednesday'],
+  ['thursday',       'Thursday'],
+  ['friday',         'Friday'],
+  ['saturday',       'Saturday'],
+  ['sunday',         'Sunday'],
+  ['after_stat_fri', 'Mon after Stat Friday'],
+  ['after_stat_mon', 'Tues after Stat Monday'],
+  ['after_stat_day', '*After Stat Day (other)'],
+];
 
-function applySearch() {
-  const q = searchInput.value.trim();
-  if (q) {
-    searchRow.classList.add('has-query');
-    taskListEl.hidden = true;
-    searchResultsEl.hidden = false;
-    renderSearchResults(q);
-  } else {
-    searchRow.classList.remove('has-query');
-    taskListEl.hidden = false;
-    searchResultsEl.hidden = true;
-    searchResultsEl.innerHTML = '';
+function dayCanonicalTokens(rawDay) {
+  const s = (rawDay || '').trim().toLowerCase();
+  if (!s) return ['all'];
+  if (s === 'all') return ['all'];
+  if (/stat/.test(s)) {
+    if (/after\s+stat\s+fri/.test(s)) return ['after_stat_fri'];
+    if (/after\s+stat\s+mon/.test(s)) return ['after_stat_mon'];
+    if (/after\s+stat\s+day/.test(s)) return ['after_stat_day'];
+    return [];
+  }
+  const map = {
+    mon: 'monday', monday: 'monday',
+    tue: 'tuesday', tues: 'tuesday', tuesday: 'tuesday',
+    wed: 'wednesday', wednesday: 'wednesday',
+    thu: 'thursday', thur: 'thursday', thurs: 'thursday', thursday: 'thursday',
+    fri: 'friday', friday: 'friday',
+    sat: 'saturday', saturday: 'saturday',
+    sun: 'sunday', sunday: 'sunday',
+  };
+  const out = new Set();
+  for (const tok of s.split(/[\s/]+/).filter(Boolean)) {
+    if (map[tok]) out.add(map[tok]);
+  }
+  return [...out];
+}
+
+function rowCoversDay(row, dayKey) {
+  const tokens = dayCanonicalTokens(row.day);
+  if (dayKey.startsWith('after_stat')) return tokens.includes(dayKey);
+  // weekend special-case: also check the TIME field for "Saturday" / "Sunday"
+  if (dayKey === 'saturday') {
+    if (tokens.includes('saturday')) return true;
+    return /\bsat(urday)?\b/i.test(row.time || '');
+  }
+  if (dayKey === 'sunday') {
+    if (tokens.includes('sunday')) return true;
+    return /\bsun(day)?\b/i.test(row.time || '');
+  }
+  // weekday: row covers it if the row says ALL or specifically lists this day
+  if (tokens.includes('all')) return true;
+  return tokens.includes(dayKey);
+}
+
+function uniqueTasks() {
+  const set = new Set();
+  for (const r of APP_DATA.rows) if (r.task) set.add(r.task);
+  return [...set].sort((a, b) =>
+    a.replace(/^\*/, '').toLowerCase().localeCompare(b.replace(/^\*/, '').toLowerCase()));
+}
+
+function daysForTask(task) {
+  const rows = APP_DATA.rows.filter(r => r.task === task);
+  const days = new Set();
+  for (const r of rows) {
+    for (const [k] of DAY_OPTIONS) {
+      if (rowCoversDay(r, k)) days.add(k);
+    }
+  }
+  return DAY_OPTIONS.filter(([k]) => days.has(k));
+}
+
+function timesForTaskAndDay(task, dayKey) {
+  const rows = APP_DATA.rows.filter(r => r.task === task && rowCoversDay(r, dayKey));
+  const times = new Set();
+  for (const r of rows) times.add(r.time || '(no time)');
+  return [...times].sort((a, b) => compareTimes(a, b));
+}
+
+function resultsForTaskDayTime(task, dayKey, time) {
+  return APP_DATA.rows.filter(r =>
+    r.task === task && rowCoversDay(r, dayKey) && (r.time || '(no time)') === time
+  );
+}
+
+const searchTaskSel = document.getElementById('searchTask');
+const searchDaySel  = document.getElementById('searchDay');
+const searchTimeSel = document.getElementById('searchTime');
+const searchResultEl = document.getElementById('searchResult');
+
+function setOptions(sel, opts, placeholder) {
+  sel.innerHTML = '';
+  const ph = document.createElement('option');
+  ph.value = '';
+  ph.textContent = placeholder;
+  sel.appendChild(ph);
+  for (const [val, label] of opts) {
+    const opt = document.createElement('option');
+    opt.value = val;
+    opt.textContent = label;
+    sel.appendChild(opt);
   }
 }
 
-searchInput.addEventListener('input', applySearch);
-searchClear.addEventListener('click', () => {
-  searchInput.value = '';
-  applySearch();
-  searchInput.focus();
+function clearSearchResult() { searchResultEl.innerHTML = ''; }
+
+function populateTaskOptions() {
+  const tasks = uniqueTasks();
+  setOptions(searchTaskSel, tasks.map(t => [t, t]), '— Select a task —');
+}
+
+function onTaskChange() {
+  clearSearchResult();
+  searchDaySel.value = '';
+  searchTimeSel.value = '';
+  searchTimeSel.disabled = true;
+  setOptions(searchTimeSel, [], '— Pick a day first —');
+  if (!searchTaskSel.value) {
+    setOptions(searchDaySel, [], '— Pick a task first —');
+    searchDaySel.disabled = true;
+    return;
+  }
+  const days = daysForTask(searchTaskSel.value);
+  setOptions(searchDaySel, days, '— Select a day —');
+  searchDaySel.disabled = days.length === 0;
+}
+
+function onDayChange() {
+  clearSearchResult();
+  searchTimeSel.value = '';
+  if (!searchTaskSel.value || !searchDaySel.value) {
+    setOptions(searchTimeSel, [], '— Pick a day first —');
+    searchTimeSel.disabled = true;
+    return;
+  }
+  const times = timesForTaskAndDay(searchTaskSel.value, searchDaySel.value);
+  setOptions(searchTimeSel, times.map(t => [t, t]), '— Select a time —');
+  searchTimeSel.disabled = times.length === 0;
+}
+
+function onTimeChange() {
+  clearSearchResult();
+  if (!searchTaskSel.value || !searchDaySel.value || !searchTimeSel.value) return;
+  const matches = resultsForTaskDayTime(searchTaskSel.value, searchDaySel.value, searchTimeSel.value);
+  if (matches.length === 0) {
+    searchResultEl.innerHTML = '<div class="search-result-empty">No rotation found for this combination.</div>';
+    return;
+  }
+  for (const m of matches) {
+    const card = document.createElement('div');
+    card.className = 'search-result-card';
+    card.dataset.site = siteForRotation(m.rotation);
+    const name = document.createElement('div');
+    name.className = 'search-result-rotation';
+    name.textContent = m.rotation;
+    card.appendChild(name);
+    const meta = document.createElement('div');
+    meta.className = 'search-result-meta';
+    let html = '';
+    html += '<div><b>Day in DB:</b> ' + escapeHtml(m.day || '—') + '</div>';
+    html += '<div><b>Unread time:</b> ' + escapeHtml(m.time || '—') + '</div>';
+    if (m.worklist) html += '<div><b>Worklist:</b> ' + escapeHtml(m.worklist) + '</div>';
+    if (m.comments) html += '<div style="margin-top:6px">' + escapeHtml(m.comments) + '</div>';
+    meta.innerHTML = html;
+    card.appendChild(meta);
+    searchResultEl.appendChild(card);
+  }
+}
+
+searchTaskSel.addEventListener('change', onTaskChange);
+searchDaySel.addEventListener('change', onDayChange);
+searchTimeSel.addEventListener('change', onTimeChange);
+document.getElementById('searchReset').addEventListener('click', () => {
+  searchTaskSel.value = '';
+  onTaskChange();
 });
 
-function renderSearchResults(query) {
-  const q = query.toLowerCase();
-  const matches = APP_DATA.rows.filter(r =>
-    (r.task     || '').toLowerCase().includes(q) ||
-    (r.time     || '').toLowerCase().includes(q) ||
-    (r.day      || '').toLowerCase().includes(q) ||
-    (r.rotation || '').toLowerCase().includes(q) ||
-    (r.worklist || '').toLowerCase().includes(q)
-  );
-
-  searchResultsEl.innerHTML = '';
-
-  const meta = document.createElement('div');
-  meta.className = 'search-meta';
-  meta.textContent = matches.length === 0
-    ? `No matches for “${query}”.`
-    : `${matches.length} ${matches.length === 1 ? 'match' : 'matches'} for “${query}”`;
-  searchResultsEl.appendChild(meta);
-
-  if (matches.length === 0) return;
-
-  // Group results by task name (alphabetical), entries within sorted by time then weekday.
-  matches.sort((a, b) => {
-    const tc = (a.task || '').localeCompare(b.task || '');
-    if (tc !== 0) return tc;
-    const tt = compareTimes(a.time, b.time);
-    if (tt !== 0) return tt;
-    return (a.day || '').localeCompare(b.day || '');
-  });
-
-  const groups = new Map();
-  for (const r of matches) {
-    if (!groups.has(r.task)) groups.set(r.task, []);
-    groups.get(r.task).push(r);
-  }
-
-  for (const [task, entries] of groups) {
-    const card = document.createElement('div');
-    card.className = 'search-task-card';
-
-    const name = document.createElement('div');
-    name.className = 'search-task-name';
-    name.textContent = task;
-    card.appendChild(name);
-
-    for (const entry of entries) {
-      const row = document.createElement('div');
-      row.className = 'search-result-row';
-
-      if (entry.time) {
-        const t = document.createElement('span');
-        t.className = 'pill-time' + (/Start Time/i.test(entry.time) ? ' start-time' : '');
-        t.textContent = entry.time;
-        row.appendChild(t);
-      }
-      if (entry.day) {
-        const d = document.createElement('span');
-        d.className = 'pill-day' + (/Stat/i.test(entry.day) ? ' stat' : '');
-        d.textContent = entry.day;
-        row.appendChild(d);
-      }
-      const rot = document.createElement('span');
-      rot.className = 'pill-rot';
-      rot.dataset.site = siteForRotation(entry.rotation);
-      rot.textContent = entry.rotation;
-      row.appendChild(rot);
-
-      card.appendChild(row);
-    }
-
-    searchResultsEl.appendChild(card);
-  }
-}
+populateTaskOptions();
 
 // Auto-roll checks at midnight (re-loads if user keeps app open across day boundary)
 setInterval(() => {
