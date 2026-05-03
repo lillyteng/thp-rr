@@ -141,6 +141,107 @@
     color: var(--muted);
     margin: 4px 0 8px;
   }
+  /* Search bar */
+  .search-row {
+    position: relative;
+    margin: 6px 0 10px;
+  }
+  .search-row input[type="search"] {
+    width: 100%;
+    padding: 10px 36px 10px 14px;
+    font-size: 15px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+  }
+  .search-row input[type="search"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(68,114,196,0.15);
+  }
+  .search-row input[type="search"]::-webkit-search-cancel-button { display: none; }
+  .search-clear {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: none;
+    background: var(--border);
+    color: var(--text);
+    font-size: 11px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+  .search-row.has-query .search-clear { display: flex; }
+
+  /* Search results */
+  .search-meta {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0 4px 12px;
+  }
+  .search-task-card {
+    background: var(--card);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .search-task-name {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+  .search-result-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .search-result-row:first-of-type { border-top: none; padding-top: 0; }
+  .search-result-row .pill-time {
+    color: white;
+    background: var(--accent);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .search-result-row .pill-time.start-time { background: var(--red); }
+  .search-result-row .pill-day {
+    font-weight: 500;
+    color: var(--text);
+  }
+  .search-result-row .pill-day.stat { color: var(--red); font-weight: 600; }
+  .search-result-row .pill-rot {
+    font-weight: 600;
+    margin-left: auto;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--text);
+  }
+  .search-result-row .pill-rot[data-site="THP"] { background: var(--site-thp-bg); }
+  .search-result-row .pill-rot[data-site="CVH"] { background: var(--site-cvh-bg); }
+  .search-result-row .pill-rot[data-site="MH"]  { background: var(--site-mh-bg); }
+  .search-result-row .pill-rot[data-site="QHC"] { background: var(--site-qhc-bg); }
+
   .today-date {
     font-size: 15px;
     font-weight: 600;
@@ -542,6 +643,11 @@
 </header>
 
 <section class="controls">
+  <div class="search-row">
+    <input type="search" id="searchInput" placeholder="Search by task, time, or day"
+           autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+    <button class="search-clear" id="searchClear" aria-label="Clear search">✕</button>
+  </div>
   <div class="today-date" id="todayDate">Today is …</div>
   <div class="day-row" id="dayPicker"></div>
 
@@ -584,6 +690,7 @@
 </section>
 
 <main id="taskList"></main>
+<main id="searchResults" hidden></main>
 
 <footer>
   <div>Checks reset automatically at midnight.</div>
@@ -1063,6 +1170,109 @@ document.getElementById('resetTodayBtn').addEventListener('click', () => {
 document.getElementById('themeBtn').addEventListener('click', () => {
   setTheme(state.theme === 'dark' ? 'light' : 'dark');
 });
+
+// ---------- search ----------
+const searchInput = document.getElementById('searchInput');
+const searchClear = document.getElementById('searchClear');
+const searchRow = searchInput.parentElement;
+const taskListEl = document.getElementById('taskList');
+const searchResultsEl = document.getElementById('searchResults');
+
+function applySearch() {
+  const q = searchInput.value.trim();
+  if (q) {
+    searchRow.classList.add('has-query');
+    taskListEl.hidden = true;
+    searchResultsEl.hidden = false;
+    renderSearchResults(q);
+  } else {
+    searchRow.classList.remove('has-query');
+    taskListEl.hidden = false;
+    searchResultsEl.hidden = true;
+    searchResultsEl.innerHTML = '';
+  }
+}
+
+searchInput.addEventListener('input', applySearch);
+searchClear.addEventListener('click', () => {
+  searchInput.value = '';
+  applySearch();
+  searchInput.focus();
+});
+
+function renderSearchResults(query) {
+  const q = query.toLowerCase();
+  const matches = APP_DATA.rows.filter(r =>
+    (r.task     || '').toLowerCase().includes(q) ||
+    (r.time     || '').toLowerCase().includes(q) ||
+    (r.day      || '').toLowerCase().includes(q) ||
+    (r.rotation || '').toLowerCase().includes(q) ||
+    (r.worklist || '').toLowerCase().includes(q)
+  );
+
+  searchResultsEl.innerHTML = '';
+
+  const meta = document.createElement('div');
+  meta.className = 'search-meta';
+  meta.textContent = matches.length === 0
+    ? `No matches for “${query}”.`
+    : `${matches.length} ${matches.length === 1 ? 'match' : 'matches'} for “${query}”`;
+  searchResultsEl.appendChild(meta);
+
+  if (matches.length === 0) return;
+
+  // Group results by task name (alphabetical), entries within sorted by time then weekday.
+  matches.sort((a, b) => {
+    const tc = (a.task || '').localeCompare(b.task || '');
+    if (tc !== 0) return tc;
+    const tt = compareTimes(a.time, b.time);
+    if (tt !== 0) return tt;
+    return (a.day || '').localeCompare(b.day || '');
+  });
+
+  const groups = new Map();
+  for (const r of matches) {
+    if (!groups.has(r.task)) groups.set(r.task, []);
+    groups.get(r.task).push(r);
+  }
+
+  for (const [task, entries] of groups) {
+    const card = document.createElement('div');
+    card.className = 'search-task-card';
+
+    const name = document.createElement('div');
+    name.className = 'search-task-name';
+    name.textContent = task;
+    card.appendChild(name);
+
+    for (const entry of entries) {
+      const row = document.createElement('div');
+      row.className = 'search-result-row';
+
+      if (entry.time) {
+        const t = document.createElement('span');
+        t.className = 'pill-time' + (/Start Time/i.test(entry.time) ? ' start-time' : '');
+        t.textContent = entry.time;
+        row.appendChild(t);
+      }
+      if (entry.day) {
+        const d = document.createElement('span');
+        d.className = 'pill-day' + (/Stat/i.test(entry.day) ? ' stat' : '');
+        d.textContent = entry.day;
+        row.appendChild(d);
+      }
+      const rot = document.createElement('span');
+      rot.className = 'pill-rot';
+      rot.dataset.site = siteForRotation(entry.rotation);
+      rot.textContent = entry.rotation;
+      row.appendChild(rot);
+
+      card.appendChild(row);
+    }
+
+    searchResultsEl.appendChild(card);
+  }
+}
 
 // Auto-roll checks at midnight (re-loads if user keeps app open across day boundary)
 setInterval(() => {
