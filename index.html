@@ -33,20 +33,18 @@
     --check-bg-disabled: #d8d8de;
     --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #000000;
-      --card: #1c1c1e;
-      --text: #f2f2f7;
-      --muted: #98989f;
-      --border: #38383a;
-      --notes-bg: #4a3f0e;
-      --shadow: 0 1px 3px rgba(0,0,0,0.4);
-      --site-thp-bg: #1f3357;
-      --site-cvh-bg: #4a3f0e;
-      --site-mh-bg: #4a1f20;
-      --site-qhc-bg: #4a2f15;
-    }
+  :root[data-theme="dark"] {
+    --bg: #000000;
+    --card: #1c1c1e;
+    --text: #f2f2f7;
+    --muted: #98989f;
+    --border: #38383a;
+    --notes-bg: #4a3f0e;
+    --shadow: 0 1px 3px rgba(0,0,0,0.4);
+    --site-thp-bg: #1f3357;
+    --site-cvh-bg: #4a3f0e;
+    --site-mh-bg: #4a1f20;
+    --site-qhc-bg: #4a2f15;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; padding: 0; }
@@ -87,6 +85,25 @@
     white-space: nowrap;
     font-weight: 400;
   }
+  .h-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .theme-btn {
+    background: rgba(255,255,255,0.18);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .theme-btn:active { background: rgba(255,255,255,0.32); }
   .progress {
     font-size: 11px;
     opacity: 0.95;
@@ -242,30 +259,57 @@
   .switch.on::before {
     transform: translateX(20px);
   }
-  /* Rotation chips */
-  .site-section {
-    margin-bottom: 8px;
+  /* Per-site dropdowns inside the picker */
+  .site-disclosure {
+    border-bottom: 1px solid var(--border);
   }
-  .site-section:last-child { margin-bottom: 0; }
-  .site-label {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+  .site-disclosure:last-child { border-bottom: none; }
+  .site-disclosure summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 10px 0;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .site-disclosure summary::-webkit-details-marker { display: none; }
+  .site-disclosure summary::before {
+    content: "›";
+    margin-right: 10px;
     color: var(--muted);
-    margin-bottom: 3px;
+    font-size: 18px;
+    line-height: 1;
+    transition: transform 0.2s ease;
+    display: inline-block;
+    width: 12px;
+  }
+  .site-disclosure[open] summary::before {
+    transform: rotate(90deg);
+  }
+  .site-disclosure-count {
+    margin-left: auto;
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .site-disclosure-count.zero {
+    color: var(--muted);
+    font-weight: 400;
   }
   .rotation-chips {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
+    gap: 6px;
+    padding: 4px 0 12px;
   }
   .rotation-chip {
-    padding: 4px 8px;
-    border-radius: 6px;
+    padding: 8px 12px;
+    border-radius: 8px;
     background: var(--bg);
     border: 1px solid var(--border);
-    font-size: 11.5px;
+    font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     user-select: none;
@@ -475,9 +519,12 @@
       <div class="title">THP Reporting Responsibilities</div>
       <div class="version" id="version">VERSION ?</div>
     </div>
-    <div class="progress">
-      <span id="progressText">0 / 0</span>
-      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="h-right">
+      <button class="theme-btn" id="themeBtn" aria-label="Toggle light/dark mode" title="Toggle theme">☾</button>
+      <div class="progress">
+        <span id="progressText">0 / 0</span>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
     </div>
   </div>
 </header>
@@ -548,10 +595,10 @@ const DAY_REGEX = {
   sunday: /^sun$|^sunday$/i,
 };
 const SITE_LABELS = {
-  THP: 'THP-level rotations',
-  CVH: 'CVH (CV-site) rotations',
-  MH:  'MH (Mississauga) rotations',
-  QHC: 'QHC rotations'
+  THP: 'THP Rotations',
+  CVH: 'CVH Rotations',
+  MH:  'MH Rotations',
+  QHC: 'QHC Rotations'
 };
 
 // ---------- state ----------
@@ -573,6 +620,7 @@ function saveState() {
       rotations: [...state.selectedRotations],
       statFri: state.statFri,
       statMon: state.statMon,
+      theme: state.theme,
     }));
   } catch (e) {}
 }
@@ -616,8 +664,20 @@ const state = {
   selectedRotations: new Set(persisted.rotations || []),
   statFri: !!persisted.statFri,
   statMon: !!persisted.statMon,
+  theme: persisted.theme || 'light',
   checks: loadTodaysChecks(),
 };
+
+function setTheme(theme) {
+  state.theme = theme;
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('themeBtn');
+  if (btn) btn.textContent = (theme === 'dark') ? '☀' : '☾';
+  saveState();
+}
+
+// Apply theme as soon as possible to avoid a light->dark flash on load
+document.documentElement.setAttribute('data-theme', state.theme);
 
 // ---------- helpers ----------
 function siteForRotation(rotation) {
@@ -702,15 +762,22 @@ function renderRotationPicker() {
   const el = document.getElementById('rotationPicker');
   el.innerHTML = '';
   for (const [site, rotations] of Object.entries(APP_DATA.sites)) {
-    const sec = document.createElement('div');
-    sec.className = 'site-section';
-    const label = document.createElement('div');
-    label.className = 'site-label';
-    label.textContent = SITE_LABELS[site] || site;
-    sec.appendChild(label);
+    const det = document.createElement('details');
+    det.className = 'site-disclosure';
 
-    const chips = document.createElement('div');
-    chips.className = 'rotation-chips';
+    const summary = document.createElement('summary');
+    const label = document.createElement('span');
+    label.textContent = SITE_LABELS[site] || site + ' Rotations';
+    summary.appendChild(label);
+    const count = document.createElement('span');
+    count.className = 'site-disclosure-count zero';
+    count.dataset.site = site;
+    count.textContent = '';
+    summary.appendChild(count);
+    det.appendChild(summary);
+
+    const chipBox = document.createElement('div');
+    chipBox.className = 'rotation-chips';
     for (const rot of rotations) {
       const chip = document.createElement('div');
       chip.className = 'rotation-chip' + (state.selectedRotations.has(rot) ? ' selected' : '');
@@ -725,13 +792,24 @@ function renderRotationPicker() {
         saveState();
         renderRotationCount();
         chip.classList.toggle('selected');
+        updateSiteCount(site);
         renderTasks();
       });
-      chips.appendChild(chip);
+      chipBox.appendChild(chip);
     }
-    sec.appendChild(chips);
-    el.appendChild(sec);
+    det.appendChild(chipBox);
+    el.appendChild(det);
+    updateSiteCount(site);
   }
+}
+
+function updateSiteCount(site) {
+  const list = APP_DATA.sites[site] || [];
+  const n = list.filter(r => state.selectedRotations.has(r)).length;
+  const el = document.querySelector('.site-disclosure-count[data-site="' + site + '"]');
+  if (!el) return;
+  el.textContent = n ? `${n} selected` : '';
+  el.classList.toggle('zero', n === 0);
 }
 
 function renderRotationCount() {
@@ -952,6 +1030,9 @@ document.getElementById('resetTodayBtn').addEventListener('click', () => {
     renderTasks();
   }
 });
+document.getElementById('themeBtn').addEventListener('click', () => {
+  setTheme(state.theme === 'dark' ? 'light' : 'dark');
+});
 
 // Auto-roll checks at midnight (re-loads if user keeps app open across day boundary)
 setInterval(() => {
@@ -965,6 +1046,7 @@ setInterval(() => {
 state._loadedKey = todayKey();
 
 // Initial render
+setTheme(state.theme);
 renderHeader();
 renderDayPicker();
 renderRotationPicker();
