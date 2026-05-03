@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="THP RR">
+<meta name="theme-color" content="#4472C4">
+<title>THP Reporting Responsibilities</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%234472C4'/><text x='90' y='118' font-size='80' font-family='-apple-system,sans-serif' font-weight='800' text-anchor='middle' fill='white'>RR</text></svg>">
+<style>
+  :root {
+    --bg: #f7f8fa;
+    --card: #ffffff;
+    --text: #1c1c1e;
+    --muted: #6b6b70;
+    --border: #d8d8de;
+    --accent: #4472C4;
+    --accent-dark: #2e5395;
+    --notes-bg: #fff7c2;
+    --site-thp: #4472C4;
+    --site-cvh: #d99a00;
+    --site-mh: #d05a5d;
+    --site-qhc: #c97a3c;
+    --site-thp-bg: #e7eefa;
+    --site-cvh-bg: #fff2cc;
+    --site-mh-bg: #fcdadb;
+    --site-qhc-bg: #fbe5d6;
+    --red: #c0392b;
+    --check-bg: #34c759;
+    --check-bg-disabled: #d8d8de;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000;
+      --card: #1c1c1e;
+      --text: #f2f2f7;
+      --muted: #98989f;
+      --border: #38383a;
+      --notes-bg: #4a3f0e;
+      --shadow: 0 1px 3px rgba(0,0,0,0.4);
+      --site-thp-bg: #1f3357;
+      --site-cvh-bg: #4a3f0e;
+      --site-mh-bg: #4a1f20;
+      --site-qhc-bg: #4a2f15;
+    }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  header {
+    background: var(--accent);
+    color: white;
+    padding: 14px 16px calc(14px + env(safe-area-inset-top));
+    padding-top: calc(14px + env(safe-area-inset-top));
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+  .h-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .title {
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: -0.01em;
+  }
+  .version {
+    font-size: 12px;
+    opacity: 0.85;
+    white-space: nowrap;
+  }
+  .progress {
+    margin-top: 6px;
+    font-size: 13px;
+    opacity: 0.95;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .progress-bar {
+    flex: 1;
+    height: 4px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: white;
+    transition: width 0.25s ease;
+  }
+  /* Day picker */
+  .controls {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px 14px;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+  .controls-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    color: var(--muted);
+    margin: 4px 0 8px;
+  }
+  .day-row {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+  }
+  .day-row::-webkit-scrollbar { display: none; }
+  .day-chip {
+    flex: 1 0 auto;
+    min-width: 38px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 14px;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s ease;
+  }
+  .day-chip.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+  .day-chip.today::after {
+    content: " ●";
+    font-size: 9px;
+    vertical-align: middle;
+    color: var(--accent);
+  }
+  .day-chip.active.today::after {
+    color: white;
+  }
+  /* Disclosure sections (rotation picker, stat-day toggle) */
+  .disclosure {
+    border: 1px solid var(--border);
+    background: var(--card);
+    border-radius: 12px;
+    margin-top: 10px;
+    overflow: hidden;
+  }
+  .disclosure summary {
+    padding: 11px 14px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .disclosure summary::-webkit-details-marker { display: none; }
+  .disclosure summary::after {
+    content: "›";
+    transform: rotate(90deg);
+    font-size: 18px;
+    transition: transform 0.2s;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .disclosure[open] summary::after {
+    transform: rotate(-90deg);
+  }
+  .disclosure-body {
+    padding: 0 14px 14px;
+  }
+  .stat-toggles {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 14px;
+  }
+  .switch-row .label-text {
+    flex: 1;
+  }
+  .switch-row .label-sub {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 2px;
+  }
+  .switch {
+    position: relative;
+    width: 50px;
+    height: 30px;
+    background: var(--check-bg-disabled);
+    border-radius: 15px;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .switch::before {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 26px;
+    height: 26px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+  }
+  .switch.on {
+    background: var(--check-bg);
+  }
+  .switch.on::before {
+    transform: translateX(20px);
+  }
+  /* Rotation chips */
+  .site-section {
+    margin-bottom: 14px;
+  }
+  .site-section:last-child { margin-bottom: 0; }
+  .site-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .rotation-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .rotation-chip {
+    padding: 7px 11px;
+    border-radius: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s ease;
+    line-height: 1.2;
+  }
+  .rotation-chip.selected {
+    color: white;
+    border-color: transparent;
+  }
+  .rotation-chip.selected[data-site="THP"] { background: var(--site-thp); }
+  .rotation-chip.selected[data-site="CVH"] { background: var(--site-cvh); }
+  .rotation-chip.selected[data-site="MH"]  { background: var(--site-mh); }
+  .rotation-chip.selected[data-site="QHC"] { background: var(--site-qhc); }
+  .picker-actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    margin-top: 6px;
+  }
+  .picker-actions button {
+    flex: 1;
+    padding: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  /* Tasks list */
+  main {
+    padding: 14px 12px 60px;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+    font-size: 15px;
+  }
+  .empty .icon {
+    font-size: 40px;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .rotation-block {
+    background: var(--card);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .rotation-header {
+    padding: 11px 14px 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .rotation-header[data-site="THP"] { background: var(--site-thp-bg); }
+  .rotation-header[data-site="CVH"] { background: var(--site-cvh-bg); }
+  .rotation-header[data-site="MH"]  { background: var(--site-mh-bg); }
+  .rotation-header[data-site="QHC"] { background: var(--site-qhc-bg); }
+  .rotation-name {
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 1.3;
+  }
+  .rotation-meta {
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .task {
+    display: flex;
+    align-items: flex-start;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+    cursor: pointer;
+  }
+  .task:last-child {
+    border-bottom: none;
+  }
+  .task.done .task-name,
+  .task.done .task-time,
+  .task.done .task-day {
+    text-decoration: line-through;
+    opacity: 0.55;
+  }
+  .task.done .task-comments,
+  .task.done .task-worklist {
+    opacity: 0.55;
+  }
+  .check {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+  }
+  .task.done .check {
+    background: var(--check-bg);
+    border-color: var(--check-bg);
+  }
+  .task.done .check::after {
+    content: "";
+    width: 6px;
+    height: 11px;
+    border-right: 2.5px solid white;
+    border-bottom: 2.5px solid white;
+    transform: rotate(45deg) translate(-1px, -2px);
+  }
+  .task-body { flex: 1; min-width: 0; }
+  .task-row1 {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    flex-wrap: wrap;
+  }
+  .task-time {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--site-thp-bg);
+    padding: 2px 7px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .task-time.start-time { color: var(--red); }
+  .task-day {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .task-day.stat { color: var(--red); font-weight: 600; }
+  .task-name {
+    font-weight: 600;
+    font-size: 15px;
+    margin-top: 5px;
+    line-height: 1.35;
+  }
+  .task-meta {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .task-meta b { color: var(--text); font-weight: 600; }
+  .task-comments {
+    margin-top: 4px;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--muted);
+  }
+  /* Footer */
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+    padding: 12px 16px 24px;
+  }
+  /* Reset button */
+  .reset-button {
+    display: block;
+    margin: 8px auto 0;
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 12px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="h-row">
+    <div class="title">THP Reporting Responsibilities</div>
+    <div class="version" id="version">VERSION ?</div>
+  </div>
+  <div class="progress">
+    <span id="progressText">0 / 0 complete</span>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+</header>
+
+<section class="controls">
+  <div class="controls-label">Day</div>
+  <div class="day-row" id="dayPicker"></div>
+
+  <details class="disclosure" id="rotationDisclosure" open>
+    <summary>
+      <span><span id="rotationCountLabel">0 rotations selected</span></span>
+    </summary>
+    <div class="disclosure-body">
+      <div class="picker-actions">
+        <button id="selectAllBtn">Select all</button>
+        <button id="clearAllBtn">Clear</button>
+      </div>
+      <div id="rotationPicker"></div>
+    </div>
+  </details>
+
+  <details class="disclosure">
+    <summary>
+      <span>Stat day overrides</span>
+    </summary>
+    <div class="disclosure-body">
+      <div class="stat-toggles">
+        <div class="switch-row">
+          <div>
+            <div class="label-text">Today is the day after a Stat Friday</div>
+            <div class="label-sub">Adds Mon-after-Stat-Fri reporting rows when day = Monday.</div>
+          </div>
+          <div class="switch" id="statFriSwitch"></div>
+        </div>
+        <div class="switch-row">
+          <div>
+            <div class="label-text">Today is the day after a Stat Monday</div>
+            <div class="label-sub">Adds Tues-after-Stat-Mon reporting rows when day = Tuesday.</div>
+          </div>
+          <div class="switch" id="statMonSwitch"></div>
+        </div>
+      </div>
+    </div>
+  </details>
+</section>
+
+<main id="taskList"></main>
+
+<footer>
+  <div>Checks reset automatically at midnight.</div>
+  <button class="reset-button" id="resetTodayBtn">Reset today's checks</button>
+</footer>
+
+<script>
+const APP_DATA = {"version_date": "May 2, 2026", "sites": {"THP": ["CT ACI AM CV/MH", "CT ACI PM CV/MH", "CT OP B#", "CT HRL", "MRI Breast", "MRI Breast Biopsy", "MRI OP", "THP NUCS AM", "THP NUCS PM", "VIR CV/MH", "VIR Consult", "THP REPORTING PM After Stat Friday", "THP REPORTING PM After Stat Monday", "THP MRI ACI", "RAD OF THE DAY"], "CVH": ["CV OB + FLUORO AM/PM", "CV OB + MAMMO AM WEDNESDAY", "CV OB + MAMMO AM + FLUORO PM WEDNESDAY", "CV FLUORO AM TUESDAY", "CV FLUORO PM TUESDAY", "CV FLUORO AM WEDNESDAY", "CV FLUORO + OB PM", "CV US AM", "CV US PM", "CV Breast Imaging"], "MH": ["MH FLUORO AM", "MH FLUORO PM", "MH US AM", "MH US PM", "MH USBX TUESDAY AM", "MH USBX TUESDAY PM"], "QHC": ["QHC Breast Imaging", "QHC General Imaging"]}, "rows": [{"rotation": "CT ACI AM CV/MH", "day": "ALL", "task": "CT ED/IP Protocol", "time": "8AM - 11:59AM", "worklist": "EPIC", "comments": "For respective site; clear up to end of shift"}, {"rotation": "CT ACI AM CV/MH", "day": "ALL", "task": "CT all other including CTA H/N except hyperacute stroke for respective site", "time": "8AM - 11:45AM", "worklist": "CVH/MH ACI CT Weekday", "comments": "Includes outpt urgent (mainly PE studies). \nStudies performed after 07:00AM (unread time) are the responsibility of the ACI rad, unless contacted by the referring MD prior to 07:59AM in which case, the overnight/early am rad is responsible for providing a final report."}, {"rotation": "CT ACI AM CV/MH", "day": "ALL", "task": "CT Head", "time": "Prev Day 22:00 to Current Day 11:45AM", "worklist": "CVH/MH ACI CT Weekday", "comments": ""}, {"rotation": "CT ACI AM CV/MH", "day": "ALL", "task": "CT ED/IP HRL (tagged to HRL) prelims for respective site", "time": "8AM - 11:45AM", "worklist": "CVH/MH ACI CT Weekday", "comments": "ACI Rad is responsible for providing a prelim report addressing acute issues. Final report is responsibility of rad assigned to CT HRL the upcoming Thursday. Tag to CT HRL if not already tagged."}, {"rotation": "CT ACI AM CV/MH", "day": "ALL", "task": "CT IP (except CT Heads) before 8AM final reports for respective site", "time": "Prev Day 19:00 - Current Day 07:59AM", "worklist": "CVH/MH ACI CT Weekday", "comments": "Late/Overnight/Early rad responsible for providing a prelim. Final reports responsibility of ACI-AM rad."}, {"rotation": "CT ACI AM CV/MH", "day": "ALL", "task": "CTA Hyperacute Stroke for respective site", "time": "8AM -11:59AM (Start Time)", "worklist": "CVH/MH ACI CT Weekday", "comments": "Responsible if exam begins prior to shift end (unread time will be > end of shift) unless responsibility verbally handed over rad to rad. Verbal report must be provided to physician +/- prelim in FFI\""}, {"rotation": "CT ACI AM CV/MH", "day": "ALL", "task": "ER/IP Consultations", "time": "8AM-11:59AM", "worklist": "Upon Request for respective site", "comments": "Consults may include ER/IP CT and XR rad checks, protocol checks, urgent report requests/ consults"}, {"rotation": "CT ACI AM CV/MH", "day": "ALL", "task": "CT ED/IP VIR Run off and aortic cases with endografts (tagged to VIR) prelims for respective site", "time": "8AM - 11:45AM", "worklist": "CVH/MH ACI CT Weekday", "comments": "ACI Rad is responsible for providing a prelim report addressing acute issues. Final report is responsibility of VIR rad (Final to be issued no later than 17:00). VIR rad available for backup (no tradeback). Aortic cases without an endograft are responsibility of diagnostic rads irrespective of how tagged."}, {"rotation": "CT ACI AM CV/MH", "day": "ALL", "task": "XR ACI Overnight for respective site", "time": "Prev Day 20:00 - 11:59PM (Midnight)", "worklist": "CVH ACI Xray/ MH ACI Xray", "comments": ""}, {"rotation": "CT ACI PM CV/MH", "day": "ALL", "task": "CT ED/IP Protocol", "time": "12:00PM-15:59", "worklist": "EPIC", "comments": "For respective site; clear up to end of shift"}, {"rotation": "CT ACI PM CV/MH", "day": "ALL", "task": "CT all other including CT Head and CTA H/N (except hyperacute stroke for respective site)", "time": "11:46AM - 15:45", "worklist": "CVH/MH ACI CT Weekday", "comments": "Excluding breast cases"}, {"rotation": "CT ACI PM CV/MH", "day": "ALL", "task": "CT ED/IP HRL (tagged to HRL) prelims for respective site", "time": "11:46AM - 15:45", "worklist": "CVH/MH ACI CT Weekday", "comments": "ACI Rad is responsible for providing a prelim report addressing acute issues. Final report is responsibility of rad assigned to CT HRL the upcoming Thursday. Tag to CT HRL if not already tagged."}, {"rotation": "CT ACI PM CV/MH", "day": "ALL", "task": "CTA Hyperacute Stroke for respective site", "time": "12PM -15:59 (Start Time)", "worklist": "CVH/MH ACI CT Weekday", "comments": "Responsible if exam begins prior to shift end (unread time will be > end of shift) unless responsibility verbally handed over rad to rad. Verbal report must be provided to physician +/- prelim in FFI\""}, {"rotation": "CT ACI PM CV/MH", "day": "ALL", "task": "ER/IP Consultations", "time": "12PM-15:59", "worklist": "Upon Request for respective site", "comments": "Consults may include ER/IP CT and XR rad checks, protocol checks, urgent report requests/ consults"}, {"rotation": "CT ACI PM CV/MH", "day": "ALL", "task": "CT ED/IP VIR Run off and aortic cases with endografts (tagged to VIR) prelims for respective site", "time": "11:46AM - 15:45", "worklist": "CVH/MH ACI CT Weekday", "comments": "ACI Rad is responsible for providing a prelim report addressing acute issues. Final report is responsibility of VIR rad (Final to be issued no later than 17:00). VIR rad available for backup (no tradeback). Aortic cases without an endograft are responsibility of diagnostic rads irrespective of how tagged."}, {"rotation": "CT HRL", "day": "Thursday", "task": "CT HRL", "time": "Prev Thurs 00:00 - Wed 23:59", "worklist": "CT HRL", "comments": "Thursday rotation only. Includes OP/ER/IP cases. \nFor ER/IP cases, ACI/Call Rad is responsible for providing a prelim report addressing acute issues. Final report is responsibility of rad assigned to CT HRL the upcoming Thursday. Case to be tagged to CT HRL."}, {"rotation": "CT OP B#", "day": "*After Stat Day", "task": "CT B#", "time": "Previous Work Day to End of Sunday, or Monday if Stat Day", "worklist": "CT B#", "comments": "Protocols as assigned, including stray protocols from prior shifts"}, {"rotation": "CT OP B#", "day": "Monday", "task": "CT B#", "time": "Prev Day (Mon includes F-Sun etc.)", "worklist": "CT B#", "comments": "Protocols as assigned, including stray protocols from prior shifts"}, {"rotation": "CT OP B#", "day": "Tues/Wed/Thurs/Fri", "task": "CT B#", "time": "Prev Day", "worklist": "CT B#", "comments": "Protocols as assigned, including stray protocols from prior shifts"}, {"rotation": "CV Breast Imaging", "day": "ALL", "task": "Breast Consults", "time": "Prev Day/As per Assignment", "worklist": "Assigned", "comments": ""}, {"rotation": "CV Breast Imaging", "day": "ALL", "task": "Breast Recall CV", "time": "Same Day", "worklist": "Assigned", "comments": ""}, {"rotation": "CV Breast Imaging", "day": "ALL", "task": "Breast Stereo CV", "time": "Same Day", "worklist": "Assigned", "comments": "If only 1 stereo, replacement US BX usually scheduled at 8:00AM"}, {"rotation": "CV Breast Imaging", "day": "ALL", "task": "Breast US BX CV", "time": "Same Day", "worklist": "Assigned/ CVH US Procedures", "comments": ""}, {"rotation": "CV Breast Imaging", "day": "ALL", "task": "US Breast W/O Mammo CV", "time": "Same Day", "worklist": "C US Breast", "comments": ""}, {"rotation": "CV Breast Imaging", "day": "ALL", "task": "US Breast with Mammo THP", "time": "Prev Day/As per Assignment", "worklist": "QHC/ MH US Breast; C US Breast", "comments": ""}, {"rotation": "CV Breast Imaging", "day": "ALL", "task": "Mammo Screening THP", "time": "Prev Day/As per Assignment", "worklist": "Assigned; CVH Mammo; QHC/MH Mammo", "comments": ""}, {"rotation": "CV FLUORO + OB PM", "day": "Mon/Wed/Thurs/Fri", "task": "Fluoro CV", "time": "PM Cases", "worklist": "Assigned/ CVH Fluoro", "comments": ""}, {"rotation": "CV FLUORO + OB PM", "day": "Mon/Wed/Thurs/Fri", "task": "High Risk OB", "time": "PM Cases", "worklist": "CVH US Obstetrics", "comments": ""}, {"rotation": "CV FLUORO AM TUESDAY", "day": "Tuesday", "task": "Fluoro CV", "time": "AM Cases", "worklist": "Assigned/ CVH Fluoro", "comments": ""}, {"rotation": "CV FLUORO AM TUESDAY", "day": "Tuesday", "task": "RAD ON SITE AM CV", "time": "8AM-11:59AM", "worklist": "Upon Request", "comments": "Responsibilities include: On site coverage of contrast reactions; US marking (if US BX rad not available); any other issue requiring onsite rad presence"}, {"rotation": "CV FLUORO AM TUESDAY", "day": "Tuesday", "task": "CT HS THP Weekend", "time": "Sunday All Day", "worklist": "THP CT HS", "comments": ""}, {"rotation": "CV FLUORO AM TUESDAY", "day": "Tuesday", "task": "XR ACI THP", "time": "Current Day 3AM-6:59AM", "worklist": "THP ACI Xray", "comments": "Includes QHC IP cases and ALL THP OP cases tagged to ACI"}, {"rotation": "CV FLUORO AM TUESDAY", "day": "Tuesday", "task": "XR ACI THP", "time": "Current Day 7AM-8:59AM", "worklist": "THP ACI Xray", "comments": "Includes QHC IP cases and ALL THP OP cases tagged to ACI"}, {"rotation": "CV FLUORO AM WEDNESDAY", "day": "Wednesday", "task": "Fluoro CV", "time": "AM Cases", "worklist": "Assigned/ CVH Fluoro", "comments": "Full fluoro AM. Facets q2 weeks."}, {"rotation": "CV FLUORO AM WEDNESDAY", "day": "Wednesday", "task": "RAD ON SITE AM CV", "time": "8AM-11:59AM", "worklist": "Upon Request", "comments": "Responsibilities include: On site coverage of contrast reactions; US marking (if US BX rad not available); any other issue requiring onsite rad presence"}, {"rotation": "CV FLUORO AM WEDNESDAY", "day": "Wednesday", "task": "US OP QHC Weekend", "time": "Sunday All Day", "worklist": "QHC OP DIAG US", "comments": "Including breast cases w/o mammo"}, {"rotation": "CV FLUORO AM WEDNESDAY", "day": "Wednesday", "task": "XR ACI THP", "time": "Current Day 3AM-6:59AM", "worklist": "THP ACI Xray", "comments": "Includes QHC IP cases and ALL THP OP cases tagged to ACI"}, {"rotation": "CV FLUORO PM TUESDAY", "day": "Tuesday", "task": "XR OP CVH/MH", "time": "Prev WeekDay 15:00-Current Day 8:59AM", "worklist": "CVH/MH OP Xray", "comments": "Tues after Stat Mon: Prev Fri to Tues"}, {"rotation": "CV FLUORO PM TUESDAY", "day": "Tuesday", "task": "US OP DIAG CVH/MH", "time": "Prev WeekDay (Mon) 7AM-10:59AM + Sat/Sun", "worklist": "CVH/MH OP DIAG US", "comments": "Excluding breast cases; weekend/stat day breast cases reported by Rad on OB+Mammo Wednesday"}, {"rotation": "CV FLUORO PM TUESDAY", "day": "Tuesday", "task": "Fluoro CV", "time": "PM Cases", "worklist": "Assigned/ CVH Fluoro", "comments": ""}, {"rotation": "CV FLUORO PM TUESDAY", "day": "Tuesday", "task": "RAD ON SITE PM CV", "time": "12PM-16:00", "worklist": "Upon Request", "comments": "Responsibilities include: On site coverage of contrast reactions; US marking (if US BX rad not available); any other issue requiring onsite rad presence"}, {"rotation": "CV FLUORO PM TUESDAY", "day": "Tuesday", "task": "CT HS THP", "time": "Prev WeekDay 12:00 - 16:59", "worklist": "THP CT HS", "comments": ""}, {"rotation": "CV FLUORO AM WEDNESDAY", "day": "Wednesday", "task": "XR ACI THP", "time": "Current Day 7AM-8:59AM", "worklist": "THP ACI Xray", "comments": "Includes QHC IP cases and ALL THP OP cases tagged to ACI"}, {"rotation": "CV OB + MAMMO AM + FLUORO PM WEDNESDAY", "day": "Wednesday", "task": "CT HS THP", "time": "Prev WeekDay 12:00 - 16:59", "worklist": "THP CT HS", "comments": ""}, {"rotation": "CV OB + FLUORO AM/PM", "day": "Thurs/Fri", "task": "Fluoro CV", "time": "AM Cases", "worklist": "Assigned/ CVH Fluoro", "comments": ""}, {"rotation": "CV OB + FLUORO AM/PM", "day": "Monday", "task": "Fluoro CV", "time": "AM + PM Cases", "worklist": "Assigned/ CVH Fluoro", "comments": ""}, {"rotation": "CV OB + FLUORO AM/PM", "day": "Thurs/Fri", "task": "High Risk OB", "time": "AM Cases", "worklist": "CVH US Obstetrics", "comments": ""}, {"rotation": "CV OB + FLUORO AM/PM", "day": "Monday", "task": "High Risk OB", "time": "AM + PM Cases", "worklist": "CVH US Obstetrics", "comments": ""}, {"rotation": "CV OB + FLUORO AM/PM", "day": "Monday", "task": "CT HS THP Weekend", "time": "Saturday 13:00-EOD", "worklist": "THP CT HS", "comments": ""}, {"rotation": "CV OB + FLUORO AM/PM", "day": "Thurs/Fri", "task": "XR ACI THP", "time": "Current Day 3AM-6:59AM", "worklist": "THP ACI Xray", "comments": "Includes QHC IP cases and ALL THP OP cases tagged to ACI"}, {"rotation": "CV OB + FLUORO AM/PM", "day": "Monday", "task": "XR ACI THP", "time": "Current Day 3AM-6:59AM", "worklist": "THP ACI Xray", "comments": "Includes QHC IP cases and ALL THP OP cases tagged to ACI"}, {"rotation": "CV OB + FLUORO AM/PM", "day": "Thurs/Fri", "task": "RAD ON SITE AM CV", "time": "8AM-11:59AM", "worklist": "Upon Request", "comments": "Responsibilities include: On site coverage of contrast reactions; US marking (if US BX rad not available); any other issue requiring onsite rad presence"}, {"rotation": "CV OB + FLUORO AM/PM", "day": "Monday", "task": "RAD ON SITE AM CV", "time": "8AM-11:59AM", "worklist": "Upon Request", "comments": "Responsibilities include: On site coverage of contrast reactions; US marking (if US BX rad not available); any other issue requiring onsite rad presence"}, {"rotation": "CV OB + FLUORO AM/PM", "day": "Mon/Wed/Thurs/Fri", "task": "RAD ON SITE PM CV", "time": "12PM-16:00", "worklist": "Upon Request", "comments": "Responsibilities include: On site coverage of contrast reactions; US marking (if US BX rad not available); any other issue requiring onsite rad presence"}, {"rotation": "CV OB + FLUORO AM/PM", "day": "Thurs/Fri", "task": "XR ACI THP", "time": "Current Day 7AM-8:59AM", "worklist": "THP ACI Xray", "comments": "Includes QHC IP cases and ALL THP OP cases tagged to ACI"}, {"rotation": "CV OB + FLUORO AM/PM", "day": "Monday", "task": "XR ACI THP", "time": "Current Day 7AM-8:59AM", "worklist": "THP ACI Xray", "comments": "Includes QHC IP cases and ALL THP OP cases tagged to ACI"}, {"rotation": "CV OB + FLUORO AM/PM", "day": "ALL", "task": "XR ACI THP", "time": "Current Day 11:46AM-13:59", "worklist": "THP ACI Xray", "comments": "Includes QHC IP cases and ALL THP OP cases tagged to ACI"}, {"rotation": "CV OB + FLUORO AM/PM", "day": "Mon/Thurs/Fri", "task": "CT HS THP", "time": "Prev WeekDay 12:00 - 16:59", "worklist": "THP CT HS", "comments": "Weekend/Stat day cases assigned separately"}, {"rotation": "CV OB + MAMMO AM WEDNESDAY", "day": "Wednesday", "task": "High Risk OB", "time": "AM Cases", "worklist": "CVH US Obstetrics", "comments": ""}, {"rotation": "CV OB + MAMMO AM WEDNESDAY", "day": "Wednesday", "task": "US Breast QHC/MH", "time": "Saturday, Sunday, Stat Days", "worklist": "QHC/MH US Breast", "comments": "Includes both cases with same day MG, and cases without same day MG. Post long weekend, responsible for US done w/o MG and M/Q over weekend"}, {"rotation": "CV OB + MAMMO AM WEDNESDAY", "day": "Wednesday", "task": "Mammo Screening THP", "time": "Weekend Cases", "worklist": "Assigned; CVH Mammo; QHC/MH Mammo", "comments": "Wednesday rotation only: OB + Mammo. No mammos Wed after long weekend; replaced by a B or M list (or 1/2B + 1/2M list)."}, {"rotation": "CV US AM", "day": "ALL", "task": "US OP DIAG CVH/MH", "time": "Prev WeekDay 11:00AM-13:59", "worklist": "CVH/MH OP DIAG US", "comments": "Excluding breast cases"}, {"rotation": "CV US AM", "day": "ALL", "task": "US BX CV", "time": "AM Cases", "worklist": "Assigned/ CVH US Procedures", "comments": "Includes biopsy protocolling requests and US marking"}, {"rotation": "CV US AM", "day": "ALL", "task": "THP Fracture Clinic", "time": "Prev WeekDay 9AM-10:59AM", "worklist": "THP Fracture Clinic", "comments": ""}, {"rotation": "CV US PM", "day": "Mon/Wed/Thurs/Fri", "task": "THP Fracture Clinic", "time": "Prev WeekDay 11AM-EOD", "worklist": "THP Fracture Clinic", "comments": "Mon includes Fri/Sat/Sun.\nMon after Stat Fri includes Thurs/Stat Fri/Sat/Sun."}, {"rotation": "CV US PM", "day": "Tuesday", "task": "THP Fracture Clinic", "time": "Prev WeekDay 11AM-EOD", "worklist": "THP Fracture Clinic", "comments": ""}, {"rotation": "CV US PM", "day": "ALL", "task": "B or M Half List", "time": "", "worklist": "CT B#", "comments": ""}, {"rotation": "CV US PM", "day": "ALL", "task": "US BX CV", "time": "PM Cases", "worklist": "Assigned/ CVH US Procedures", "comments": "Includes biopsy protocolling requests and US marking"}, {"rotation": "MH FLUORO AM", "day": "Wed/Thurs/Fri", "task": "US OP DIAG CVH/MH", "time": "Prev WeekDay 14:00-EOD", "worklist": "CVH/MH OP DIAG US", "comments": "Excluding breast cases"}, {"rotation": "MH FLUORO AM", "day": "Monday", "task": "US OP DIAG CVH/MH", "time": "Prev WeekDay 14:00-EOD", "worklist": "CVH/MH OP DIAG US", "comments": "Excluding breast cases"}, {"rotation": "MH FLUORO AM", "day": "Tuesday", "task": "US OP DIAG CVH/MH", "time": "Prev WeekDay 14:00-EOD", "worklist": "CVH/MH OP DIAG US", "comments": "Excluding breast cases"}, {"rotation": "MH FLUORO AM", "day": "Wed/Thurs/Fri", "task": "Fluoro MH", "time": "AM Cases", "worklist": "Assigned/ MH Fluoro", "comments": ""}, {"rotation": "MH FLUORO AM", "day": "Monday", "task": "Fluoro MH", "time": "AM Cases", "worklist": "Assigned/ MH Fluoro", "comments": ""}, {"rotation": "MH FLUORO AM", "day": "Tuesday", "task": "Fluoro MH", "time": "AM Cases", "worklist": "Assigned/ MH Fluoro", "comments": ""}, {"rotation": "MH FLUORO AM", "day": "Wed/Thurs/Fri", "task": "RAD ON SITE AM MH", "time": "8AM-11:59AM", "worklist": "Upon Request", "comments": "Responsibilities include: On site coverage of contrast reactions; US marking (if US BX rad not available); any other issue requiring onsite rad presence"}, {"rotation": "MH FLUORO AM", "day": "Monday", "task": "RAD ON SITE AM MH", "time": "8AM-11:59AM", "worklist": "Upon Request", "comments": "Responsibilities include: On site coverage of contrast reactions; US marking (if US BX rad not available); any other issue requiring onsite rad presence"}, {"rotation": "MH FLUORO AM", "day": "Tuesday", "task": "RAD ON SITE AM MH", "time": "8AM-11:59AM", "worklist": "Upon Request", "comments": "Responsibilities include: On site coverage of contrast reactions; US marking (if US BX rad not available); any other issue requiring onsite rad presence"}, {"rotation": "MH FLUORO AM", "day": "Wed/Thurs/Fri", "task": "XR ACI THP", "time": "Current Day 9AM-11:45AM", "worklist": "THP ACI Xray", "comments": "Includes QHC IP cases and ALL THP OP cases tagged to ACI"}, {"rotation": "MH FLUORO AM", "day": "Monday", "task": "XR ACI THP", "time": "Current Day 9AM-11:45AM", "worklist": "THP ACI Xray", "comments": "Includes QHC IP cases and ALL THP OP cases tagged to ACI"}, {"rotation": "MH FLUORO AM", "day": "Tuesday", "task": "XR ACI THP", "time": "Current Day 9AM-11:45AM", "worklist": "THP ACI Xray", "comments": "Includes QHC IP cases and ALL THP OP cases tagged to ACI"}, {"rotation": "MH FLUORO AM", "day": "Monday", "task": "CT HS THP Weekend", "time": "Saturday 12AM-12:59PM", "worklist": "THP CT HS", "comments": ""}, {"rotation": "MH FLUORO AM", "day": "Tuesday", "task": "US OP QHC Weekend", "time": "Saturday All Day", "worklist": "QHC OP DIAG US", "comments": "Excluding breast cases; weekend/stat day breast cases reported by Rad on OB+Mammo Wednesday"}, {"rotation": "MH FLUORO AM", "day": "Mon/Thurs/Fri", "task": "CT HS THP", "time": "Prev WeekDay 17:00 - EOD", "worklist": "THP CT HS", "comments": "Weekend/Stat day cases assigned separately"}, {"rotation": "MH FLUORO AM", "day": "Tuesday", "task": "CT HS THP", "time": "Prev WeekDay 17:00 - EOD", "worklist": "THP CT HS", "comments": ""}, {"rotation": "MH FLUORO AM", "day": "Wednesday", "task": "CT HS THP", "time": "Prev WeekDay 17:00 - EOD", "worklist": "THP CT HS", "comments": ""}, {"rotation": "MH FLUORO PM", "day": "ALL", "task": "B or M Half List", "time": "As per Assignment", "worklist": "B/M #", "comments": ""}, {"rotation": "MH FLUORO PM", "day": "ALL", "task": "Fluoro MH", "time": "PM Cases", "worklist": "Assigned/ MH Fluoro", "comments": ""}, {"rotation": "MH FLUORO PM", "day": "ALL", "task": "RAD ON SITE PM MH", "time": "12PM-16:00", "worklist": "Upon Request", "comments": "Responsibilities include: On site coverage of contrast reactions; US marking (if US BX rad not available); any other issue requiring onsite rad presence"}, {"rotation": "MH FLUORO PM", "day": "Mon/Wed/Thurs/Fri", "task": "XR ACI THP", "time": "Current Day 14:00-15:45", "worklist": "THP ACI Xray", "comments": "Includes QHC IP cases and ALL THP OP cases tagged to ACI"}, {"rotation": "MH FLUORO PM", "day": "Tuesday", "task": "XR ACI THP", "time": "Current Day 14:00-15:45", "worklist": "THP ACI Xray", "comments": "Includes QHC IP cases and ALL THP OP cases tagged to ACI"}, {"rotation": "MH US AM", "day": "Thurs/Fri", "task": "XR OP CVH/MH", "time": "Prev WeekDay 15:00-Current Day 8:59AM", "worklist": "CVH/MH OP Xray", "comments": ""}, {"rotation": "MH US AM", "day": "Monday", "task": "XR OP CVH/MH", "time": "Prev WeekDay (Fri) 15:00-Current Day (Mon) 8:59AM", "worklist": "CVH/MH OP Xray", "comments": "Mon after Stat Fri: Prev Thurs to Mon. Includes weekend cases."}, {"rotation": "MH US AM", "day": "Mon/Wed/Thurs/Fri", "task": "XR ACI THP", "time": "Current Day 12AM - 2:59AM", "worklist": "THP ACI Xray", "comments": "Includes QHC IP cases and ALL THP OP cases tagged to ACI"}, {"rotation": "MH US AM", "day": "Wednesday", "task": "XR OP CVH/MH", "time": "Prev WeekDay 15:00-Current Day 8:59AM", "worklist": "CVH/MH OP Xray", "comments": ""}, {"rotation": "MH US AM", "day": "Mon/Wed/Thurs/Fri", "task": "US OP DIAG CVH/MH", "time": "Prev WeekDay 7AM-10:59AM", "worklist": "CVH/MH OP DIAG US", "comments": "Excluding breast cases. Weekend/Stat day cases assigned separately"}, {"rotation": "MH US AM", "day": "Mon/Wed/Thurs/Fri", "task": "US BX MH", "time": "AM Cases", "worklist": "Assigned/ MH US Procedures", "comments": "Includes biopsy protocolling requests and US marking"}, {"rotation": "MH US PM", "day": "Mon/Wed/Thurs/Fri", "task": "B or M Half List", "time": "", "worklist": "CT B#", "comments": ""}, {"rotation": "MH US PM", "day": "Mon/Wed/Thurs/Fri", "task": "XR OP CVH/MH", "time": "Current Day 11:46AM-14:59", "worklist": "CVH/MH OP Xray", "comments": ""}, {"rotation": "MH US PM", "day": "Mon/Wed/Thurs/Fri", "task": "US BX MH", "time": "PM Cases", "worklist": "Assigned/ MH US Procedures", "comments": "Includes biopsy protocolling requests and US marking"}, {"rotation": "MH USBX TUESDAY AM", "day": "Tuesday", "task": "XR ACI THP", "time": "Current Day 12AM - 2:59AM", "worklist": "THP ACI Xray", "comments": "Includes QHC IP cases and ALL THP OP cases tagged to ACI"}, {"rotation": "MH USBX TUESDAY AM", "day": "Tuesday", "task": "US BX MH", "time": "AM Cases", "worklist": "Assigned/ MH US Procedures", "comments": "Includes biopsy protocolling requests and US marking"}, {"rotation": "MH USBX TUESDAY PM", "day": "Tuesday", "task": "XR OP CVH/MH", "time": "Current Day 11:46AM-14:59", "worklist": "CVH/MH OP Xray", "comments": ""}, {"rotation": "MH USBX TUESDAY PM", "day": "Tuesday", "task": "US BX MH", "time": "PM Cases", "worklist": "Assigned/ MH US Procedures", "comments": "Includes biopsy protocolling requests and US marking"}, {"rotation": "MRI Breast", "day": "Monday", "task": "MRI breast + associated mammos", "time": "Assigned", "worklist": "Assigned", "comments": "Cases done on Sola prev Wed; all cases done prev Thurs-Fri (Sola + Vida)"}, {"rotation": "MRI Breast", "day": "Thursday", "task": "MRI breast + associated mammos", "time": "Assigned", "worklist": "Assigned", "comments": "All cases done on Mon-Tues (Sola + Vida); Cases done on Vida on Wed"}, {"rotation": "MRI Breast Biopsy", "day": "Tuesday", "task": "MRI breast biopsies", "time": "Assigned", "worklist": "Assigned", "comments": "Paired with half B or M. Occurs q2 weeks, except after long weekend"}, {"rotation": "MRI OP", "day": "*After Stat Day", "task": "MRI M#", "time": "As per Assignment (See note in LB)", "worklist": "MRI M#", "comments": "Time cut-off is by START TIME (NOT Unread Time); Protocols as assigned, including stray protocols from prior shifts"}, {"rotation": "MRI OP", "day": "Monday", "task": "MRI M#", "time": "Previous Friday 12AM -Sunday 23:59 (START TIME)", "worklist": "MRI M#", "comments": ""}, {"rotation": "MRI OP", "day": "Tues/Wed/Thurs/Fri", "task": "MRI M#", "time": "Prev Day 12AM-23:59 (START TIME)", "worklist": "MRI M#", "comments": ""}, {"rotation": "QHC Breast Imaging", "day": "ALL", "task": "THP Fracture Clinic", "time": "Prev WeekDay 7AM-8:59AM", "worklist": "THP Fracture Clinic", "comments": ""}, {"rotation": "QHC Breast Imaging", "day": "ALL", "task": "Breast Consults", "time": "Prev Day/As per Assignment", "worklist": "Assigned", "comments": ""}, {"rotation": "QHC Breast Imaging", "day": "ALL", "task": "Breast Recall QHC + MH", "time": "Same Day", "worklist": "QHC/MH Mammo + QHC/MH US Breast", "comments": ""}, {"rotation": "QHC Breast Imaging", "day": "ALL", "task": "Breast Stereo QHC", "time": "8:00AM, 9:00AM Booking times", "worklist": "Assigned", "comments": "Morning stereo biopsies/ galactograms"}, {"rotation": "QHC Breast Imaging", "day": "ALL", "task": "US Breast W/O Mammo QHC + MH", "time": "Prev WeekDay", "worklist": "QHC + MH US Breast", "comments": "Current day if IP/ER cases"}, {"rotation": "QHC Breast Imaging", "day": "ALL", "task": "Fluoro QHC", "time": "", "worklist": "Assigned/ MH Fluoro", "comments": ""}, {"rotation": "QHC Breast Imaging", "day": "ALL", "task": "RAD ON SITE AM QHC", "time": "8AM-12PM", "worklist": "Upon Request", "comments": "Responsibilities include: On site coverage of contrast reactions; US marking; any other issue requiring onsite rad presence"}, {"rotation": "QHC Breast Imaging", "day": "ALL", "task": "US Breast with Mammo THP", "time": "Prev Day/As per Assignment", "worklist": "QHC/ MH US Breast; C US Breast", "comments": ""}, {"rotation": "QHC Breast Imaging", "day": "ALL", "task": "Mammo Screening THP", "time": "Prev Day/As per Assignment", "worklist": "Assigned; CVH Mammo; QHC/MH Mammo", "comments": "Assigned previous workday across sites (current day if IP/ER cases)"}, {"rotation": "QHC Breast Imaging", "day": "ALL", "task": "US BX QHC", "time": "PM Cases", "worklist": "Assigned/ QHC US Procedures", "comments": "Cases with booking times after 1:30PM"}, {"rotation": "QHC Breast Imaging", "day": "ALL", "task": "XR QHC", "time": "Prev Day 15:46 to Prev Day 23:59 (see note re Monday)", "worklist": "QHC Xray and ACI CT", "comments": "Tue-Fri: Includes ED and IP exams done during this time\nMon: Includes all OP cases from Prev Fri 15:46 through to end of Sunday, plus ED/IP from Sun 8AM to Sun EOD\n(*Q UCC+IP Fri 15:46 to Sun 07:59AM etc. reported by VIR weekend call.)\n*Mon following Stat Fri starts from prev Thurs instead of Fri.\n*Tues following Stat day covers up to Stat Mon instead of Sun."}, {"rotation": "QHC General Imaging", "day": "ALL", "task": "CT HS THP", "time": "Prev WeekDay 12AM-11:59", "worklist": "THP CT HS", "comments": "Weekend/Stat day cases assigned separately"}, {"rotation": "QHC General Imaging", "day": "ALL", "task": "CT ACI QHC", "time": "07:00-15:45", "worklist": "QHC Xray and ACI CT", "comments": "Any IP or urgent OP CT tagged to ACI from 7AM -15:45, includes unreported UCC CT brain from prior night from 22:00 on"}, {"rotation": "QHC General Imaging", "day": "ALL", "task": "Fluoro QHC", "time": "", "worklist": "Assigned/ MH Fluoro", "comments": ""}, {"rotation": "QHC General Imaging", "day": "ALL", "task": "RAD ON SITE PM QHC", "time": "12PM-16:00", "worklist": "Upon Request", "comments": "Responsibilities include: On site coverage of contrast reactions; US marking; any other issue requiring onsite rad presence"}, {"rotation": "QHC General Imaging", "day": "ALL", "task": "US BX QHC", "time": "AM Cases", "worklist": "Assigned/ QHC US Procedures", "comments": "Cases with booking times up tp 1:29PM"}, {"rotation": "QHC General Imaging", "day": "ALL", "task": "US QHC WeekDay", "time": "Prev WeekDay All Day", "worklist": "QHC OP DIAG US", "comments": "Excluding breast cases. Weekend/Stat day cases assigned separately"}, {"rotation": "QHC General Imaging", "day": "ALL", "task": "XR QHC", "time": "Current Day from 12AM - 15:45", "worklist": "QHC Xray and ACI CT", "comments": ""}, {"rotation": "RAD OF THE DAY", "day": "ALL", "task": "Backup for on-site coverage", "time": "", "worklist": "Upon Request", "comments": "Backup in the event of rad illness and on-site coverage cannot be alternatively arranged. Will backfill rad-of-the day tasks."}, {"rotation": "RAD OF THE DAY", "day": "ALL", "task": "Consults on Outside Imaging - Non-Urgent", "time": "Prev Day", "worklist": "Upon Request", "comments": "All routine consult requests. Outside images/report must be uploaded"}, {"rotation": "RAD OF THE DAY", "day": "ALL", "task": "Consults on Outside Imaging - Urgent", "time": "Same Day 8:00AM - 15:30", "worklist": "Upon Request", "comments": "Must state urgent in request.  Outside images/report must be uploaded"}, {"rotation": "RAD OF THE DAY", "day": "ALL", "task": "US ED/IP questions", "time": "12:00PM-16:00", "worklist": "Upon Request", "comments": ""}, {"rotation": "RAD OF THE DAY", "day": "ALL", "task": "Outpatient related inquiries", "time": "8:00AM -16:00", "worklist": "Upon Request", "comments": "Includes: Clinician rad discussion request, clerical questions, technologist questions, image checks for OP CT/US except P2 OP CT (which goes to CT ACI). (Biopsy protocolling part of UsBx rotations.)"}, {"rotation": "RAD OF THE DAY", "day": "ALL", "task": "Un/misassigned cases", "time": "Discovery time Prev Day 14:00 - Current Day 13:59", "worklist": "Upon Request", "comments": ""}, {"rotation": "RAD OF THE DAY", "day": "ALL", "task": "Urgent Outpatient reads", "time": "8:00AM -15:30", "worklist": "Upon Request", "comments": "Trade-back model"}, {"rotation": "RAD OF THE DAY", "day": "ALL", "task": "US ACI THP", "time": "Current Day 11:46-15:45", "worklist": "THP ACI US", "comments": "Also includes QHC cases tagged as ACI"}, {"rotation": "RAD OF THE DAY", "day": "ALL", "task": "Prostate MRI fusion Bx Consults", "time": "", "worklist": "Assigned", "comments": "Can be swapped to a prostate MRI rad like all other workload swaps if required"}, {"rotation": "THP MRI ACI", "day": "ALL", "task": "MRI ED/IP", "time": "Prev Day 14:30 - Current Day 14:29", "worklist": "THP ED/IP MR", "comments": ""}, {"rotation": "THP MRI ACI", "day": "ALL", "task": "MRI Checks/Questions", "time": "8:00AM -16:00", "worklist": "Upon Request", "comments": "May include OP/ER/IP rad checks, protocol checks. (Urgent OP report requests, second opinion reports/ consults go to Rad of The Day)"}, {"rotation": "THP MRI ACI", "day": "ALL", "task": "MRI ED/IP Protocols routed to rad", "time": "Prev Day 15:30 - Current Day 15:29", "worklist": "EPIC", "comments": ""}, {"rotation": "THP NUCS AM", "day": "ALL", "task": "BMD", "time": "Assigned", "worklist": "Assigned/ THP BMD", "comments": ""}, {"rotation": "THP NUCS AM", "day": "ALL", "task": "NUCS AM", "time": "Assigned (Includes Prev Day Non-urgent IP after 15:45)", "worklist": "Assigned/ THP Nuclear Medicine", "comments": "If assigned weekend/ Stat Day cases, Monday/post-stat day rad to divide equally amongst M,T, W THP Nucs AM Rads"}, {"rotation": "THP NUCS AM", "day": "ALL", "task": "US ACI THP", "time": "Current Day 7AM-11:45AM", "worklist": "THP ACI US", "comments": "Also includes QHC cases tagged as ACI"}, {"rotation": "THP NUCS AM", "day": "ALL", "task": "US ED/IP questions", "time": "8:00AM -12PM", "worklist": "Upon Request", "comments": "Includes all ED/IP US checks and consults"}, {"rotation": "THP NUCS PM", "day": "Wed/Thurs/Fri", "task": "XR OP CVH/MH", "time": "Current Day 9AM-11:45AM", "worklist": "CVH/MH OP Xray", "comments": ""}, {"rotation": "THP NUCS PM", "day": "Monday", "task": "XR OP CVH/MH", "time": "Current Day 9AM-11:45AM", "worklist": "CVH/MH OP Xray", "comments": ""}, {"rotation": "THP NUCS PM", "day": "Tuesday", "task": "XR OP CVH/MH", "time": "Current Day 9AM-11:45AM", "worklist": "CVH/MH OP Xray", "comments": ""}, {"rotation": "THP NUCS PM", "day": "ALL", "task": "BMD", "time": "Assigned", "worklist": "Assigned/ THP BMD", "comments": ""}, {"rotation": "THP NUCS PM", "day": "ALL", "task": "B or M Half List", "time": "", "worklist": "CT B#", "comments": ""}, {"rotation": "THP NUCS PM", "day": "ALL", "task": "NUCS Cardiology", "time": "Rad will be contacted by the cardiologist to co-read cases", "worklist": "", "comments": ""}, {"rotation": "THP NUCS PM", "day": "ALL", "task": "NUCS PM", "time": "Assigned", "worklist": "Assigned/ THP Nuclear Medicine", "comments": "If assigned weekend cases,Monday/ post-stat rad to divide equally amongst M,T, W THP Nucs PM Rads"}, {"rotation": "THP REPORTING PM After Stat Friday", "day": "Mon after Stat Fri", "task": "B or M Half List", "time": "", "worklist": "CT B#", "comments": ""}, {"rotation": "THP REPORTING PM After Stat Friday", "day": "Mon after Stat Fri", "task": "US OP DIAG CVH/MH", "time": "Stat Friday Cases", "worklist": "CVH/MH OP DIAG US", "comments": "Excluding breast cases; weekend/stat day breast cases reported by Rad on OB+Mammo Wednesday"}, {"rotation": "THP REPORTING PM After Stat Friday", "day": "Mon after Stat Fri", "task": "CT HS THP", "time": "Stat Friday Cases", "worklist": "THP CT HS", "comments": ""}, {"rotation": "THP REPORTING PM After Stat Friday", "day": "Mon after Stat Fri", "task": "US QHC WeekDay", "time": "Stat Friday Cases", "worklist": "QHC OP DIAG US", "comments": "Excluding breast cases"}, {"rotation": "THP REPORTING PM After Stat Monday", "day": "Tues after Stat Mon", "task": "B or M Half List", "time": "", "worklist": "CT B#", "comments": ""}, {"rotation": "THP REPORTING PM After Stat Monday", "day": "Tues after Stat Mon", "task": "US OP DIAG CVH/MH", "time": "Stat Monday Cases", "worklist": "CVH/MH OP DIAG US", "comments": "Excluding breast cases; weekend/stat day breast cases reported by Rad on OB+Mammo Wednesday"}, {"rotation": "THP REPORTING PM After Stat Monday", "day": "Tues after Stat Mon", "task": "CT HS THP", "time": "Stat Monday Cases", "worklist": "THP CT HS", "comments": ""}, {"rotation": "THP REPORTING PM After Stat Monday", "day": "Tues after Stat Mon", "task": "CT HS THP Weekend", "time": "Saturday All Day", "worklist": "THP CT HS", "comments": ""}, {"rotation": "THP REPORTING PM After Stat Monday", "day": "Tues after Stat Mon", "task": "THP Fracture Clinic", "time": "Sat/Sun/Stat Mon", "worklist": "THP Fracture Clinic", "comments": ""}, {"rotation": "THP REPORTING PM After Stat Monday", "day": "Tues after Stat Mon", "task": "US QHC WeekDay", "time": "Stat Monday Cases", "worklist": "QHC OP DIAG US", "comments": "Excluding breast cases"}, {"rotation": "VIR Consult", "day": "Thursday", "task": "B or M Half List", "time": "", "worklist": "CT B#", "comments": ""}, {"rotation": "VIR Consult", "day": "Thursday", "task": "VIR Consults", "time": "", "worklist": "Assigned/ Upon Request", "comments": "Rotation based at C-Site"}, {"rotation": "VIR CV/MH", "day": "ALL", "task": "CTA ED/IP", "time": "Same Day", "worklist": "THP CT VIR", "comments": "Prelim for ED/IP cases tagged to VIR: responsibility of rads on ACI or on call.\nCT in patients with endografts: only VIR rad responsibility if indication relates to aorta/graft.\nBody CTA in patients w/o endograft: responsibility of diagnostic rads irrespective if tagged to VIR.\nFinal report is the responsibility of the VIR rad as follows:\n• Weekday 07:00–15:45: same day VIR rad at site (report by EOD) // QHC covered by CVH VIR rad\n• Weekday 15:46–07:00: VIR rad on next shift at site (report by 9:30am next day) / QHC covered by CVH VIR rad / Fri cases by Sat on-call rad\n• Weekend 07:00–06:59: VIR rad on next shift – Sun on-call or STAT, or Mon/Tue VIR rad at site / QHC covered by CVH VIR rad"}, {"rotation": "VIR CV/MH", "day": "ALL", "task": "CTA OP", "time": "Prev Day", "worklist": "THP CT VIR", "comments": ""}, {"rotation": "VIR CV/MH", "day": "ALL", "task": "VIR Procedures", "time": "Same Day", "worklist": "", "comments": ""}]};
+const DAY_LIST = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const DAY_FULL = {
+  Mon: 'monday', Tue: 'tuesday', Wed: 'wednesday',
+  Thu: 'thursday', Fri: 'friday', Sat: 'saturday', Sun: 'sunday'
+};
+const DAY_REGEX = {
+  monday: /^mon$|^monday$/i,
+  tuesday: /^tue$|^tues$|^tuesday$/i,
+  wednesday: /^wed$|^wednesday$/i,
+  thursday: /^thu$|^thur$|^thurs$|^thursday$/i,
+  friday: /^fri$|^friday$/i,
+  saturday: /^sat$|^saturday$/i,
+  sunday: /^sun$|^sunday$/i,
+};
+const SITE_LABELS = {
+  THP: 'THP-level rotations',
+  CVH: 'CVH (CV-site) rotations',
+  MH:  'MH (Mississauga) rotations',
+  QHC: 'QHC rotations'
+};
+
+// ---------- state ----------
+const STATE_KEY = 'thp-rr-app-state';
+const CHECKS_KEY_PREFIX = 'thp-rr-checks-';
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STATE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return null;
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(STATE_KEY, JSON.stringify({
+      day: state.day,
+      rotations: [...state.selectedRotations],
+      statFri: state.statFri,
+      statMon: state.statMon,
+    }));
+  } catch (e) {}
+}
+
+function todayKey() {
+  const d = new Date();
+  return CHECKS_KEY_PREFIX + d.toISOString().slice(0, 10);
+}
+
+function loadTodaysChecks() {
+  // also drop any other date keys to keep storage tidy
+  const today = todayKey();
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith(CHECKS_KEY_PREFIX) && k !== today) {
+      localStorage.removeItem(k);
+    }
+  }
+  try {
+    const raw = localStorage.getItem(today);
+    if (raw) return new Set(JSON.parse(raw));
+  } catch (e) {}
+  return new Set();
+}
+
+function saveChecks() {
+  try {
+    localStorage.setItem(todayKey(), JSON.stringify([...state.checks]));
+  } catch (e) {}
+}
+
+const todayDayCode = DAY_LIST[(new Date().getDay() + 6) % 7]; // shift Sun=0 → index 6
+
+const persisted = loadState() || {};
+const state = {
+  day: persisted.day || todayDayCode,
+  selectedRotations: new Set(persisted.rotations || []),
+  statFri: !!persisted.statFri,
+  statMon: !!persisted.statMon,
+  checks: loadTodaysChecks(),
+};
+
+// ---------- helpers ----------
+function siteForRotation(rotation) {
+  for (const [site, list] of Object.entries(APP_DATA.sites)) {
+    if (list.includes(rotation)) return site;
+  }
+  return 'THP';
+}
+
+function dayMatches(rowDay, dayCode, statFri, statMon) {
+  const rd = (rowDay || '').trim();
+  if (!rd || rd.toUpperCase() === 'ALL') return true;
+  const fullDay = DAY_FULL[dayCode];
+
+  if (/stat/i.test(rd)) {
+    if (/after\s+stat\s+fri/i.test(rd)) return statFri && fullDay === 'monday';
+    if (/after\s+stat\s+mon/i.test(rd)) return statMon && fullDay === 'tuesday';
+    if (/after\s+stat\s+day/i.test(rd)) return statFri || statMon;
+    return false;
+  }
+
+  const tokens = rd.split(/[\s/]+/).filter(Boolean);
+  const re = DAY_REGEX[fullDay];
+  return re ? tokens.some(t => re.test(t)) : false;
+}
+
+function timeSortKey(t) {
+  t = (t || '').trim();
+  if (!t) return [9, 999];
+  let m = t.match(/(?<!\d)(\d{1,2})(?::(\d{2}))?\s*(AM|PM)/i);
+  if (m) {
+    let h = parseInt(m[1], 10), mi = parseInt(m[2] || '0', 10);
+    const ampm = m[3].toUpperCase();
+    if (ampm === 'PM' && h !== 12) h += 12;
+    if (ampm === 'AM' && h === 12) h = 0;
+    return [1, h * 60 + mi];
+  }
+  m = t.match(/(?<!\d)(\d{1,2}):(\d{2})/);
+  if (m) {
+    const h = parseInt(m[1], 10), mi = parseInt(m[2], 10);
+    if (h <= 23 && mi <= 59) return [1, h * 60 + mi];
+  }
+  if (/\bAM\b/i.test(t)) return [2, 480];
+  if (/\bPM\b/i.test(t)) return [2, 720];
+  return [9, 0];
+}
+
+function compareTimes(a, b) {
+  const ka = timeSortKey(a), kb = timeSortKey(b);
+  if (ka[0] !== kb[0]) return ka[0] - kb[0];
+  return ka[1] - kb[1];
+}
+
+function rowKey(row) {
+  return row.rotation + '|' + row.task + '|' + row.time + '|' + row.day;
+}
+
+// ---------- rendering ----------
+function renderHeader() {
+  document.getElementById('version').textContent = 'VERSION ' + APP_DATA.version_date;
+}
+
+function renderDayPicker() {
+  const el = document.getElementById('dayPicker');
+  el.innerHTML = '';
+  for (const d of DAY_LIST) {
+    const chip = document.createElement('div');
+    chip.className = 'day-chip' + (d === state.day ? ' active' : '') + (d === todayDayCode ? ' today' : '');
+    chip.textContent = d;
+    chip.addEventListener('click', () => {
+      state.day = d;
+      saveState();
+      renderDayPicker();
+      renderTasks();
+    });
+    el.appendChild(chip);
+  }
+}
+
+function renderRotationPicker() {
+  const el = document.getElementById('rotationPicker');
+  el.innerHTML = '';
+  for (const [site, rotations] of Object.entries(APP_DATA.sites)) {
+    const sec = document.createElement('div');
+    sec.className = 'site-section';
+    const label = document.createElement('div');
+    label.className = 'site-label';
+    label.textContent = SITE_LABELS[site] || site;
+    sec.appendChild(label);
+
+    const chips = document.createElement('div');
+    chips.className = 'rotation-chips';
+    for (const rot of rotations) {
+      const chip = document.createElement('div');
+      chip.className = 'rotation-chip' + (state.selectedRotations.has(rot) ? ' selected' : '');
+      chip.dataset.site = site;
+      chip.textContent = rot;
+      chip.addEventListener('click', () => {
+        if (state.selectedRotations.has(rot)) {
+          state.selectedRotations.delete(rot);
+        } else {
+          state.selectedRotations.add(rot);
+        }
+        saveState();
+        renderRotationCount();
+        chip.classList.toggle('selected');
+        renderTasks();
+      });
+      chips.appendChild(chip);
+    }
+    sec.appendChild(chips);
+    el.appendChild(sec);
+  }
+}
+
+function renderRotationCount() {
+  const n = state.selectedRotations.size;
+  const lbl = document.getElementById('rotationCountLabel');
+  lbl.textContent = n === 0 ? 'Pick your rotation(s)' :
+                    n === 1 ? '1 rotation selected' :
+                    `${n} rotations selected`;
+}
+
+function renderStatSwitches() {
+  const f = document.getElementById('statFriSwitch');
+  const m = document.getElementById('statMonSwitch');
+  f.classList.toggle('on', state.statFri);
+  m.classList.toggle('on', state.statMon);
+}
+
+function renderTasks() {
+  const main = document.getElementById('taskList');
+  main.innerHTML = '';
+
+  if (state.selectedRotations.size === 0) {
+    main.innerHTML = '<div class="empty"><span class="icon">👋</span>Pick one or more rotations above to see your tasks for ' +
+                     DAY_FULL[state.day].charAt(0).toUpperCase() + DAY_FULL[state.day].slice(1) + '.</div>';
+    updateProgress(0, 0);
+    return;
+  }
+
+  const grouped = {};
+  for (const rot of state.selectedRotations) grouped[rot] = [];
+
+  for (const row of APP_DATA.rows) {
+    if (!state.selectedRotations.has(row.rotation)) continue;
+    if (!dayMatches(row.day, state.day, state.statFri, state.statMon)) continue;
+    grouped[row.rotation].push(row);
+  }
+
+  // Order rotations: respect site grouping (THP → CVH → MH → QHC), then user's selection order
+  const orderedRotations = [];
+  for (const [site, list] of Object.entries(APP_DATA.sites)) {
+    for (const rot of list) {
+      if (state.selectedRotations.has(rot)) orderedRotations.push(rot);
+    }
+  }
+
+  let totalTasks = 0, doneTasks = 0;
+
+  for (const rotation of orderedRotations) {
+    const rows = grouped[rotation];
+    rows.sort((a, b) => compareTimes(a.time, b.time));
+
+    const block = document.createElement('div');
+    block.className = 'rotation-block';
+    const site = siteForRotation(rotation);
+
+    const header = document.createElement('div');
+    header.className = 'rotation-header';
+    header.dataset.site = site;
+    const name = document.createElement('div');
+    name.className = 'rotation-name';
+    name.textContent = rotation;
+    header.appendChild(name);
+    const meta = document.createElement('div');
+    meta.className = 'rotation-meta';
+    if (rows.length === 0) {
+      meta.textContent = 'No tasks';
+    } else {
+      const doneInRot = rows.filter(r => state.checks.has(rowKey(r))).length;
+      meta.textContent = `${doneInRot} / ${rows.length}`;
+    }
+    header.appendChild(meta);
+    block.appendChild(header);
+
+    if (rows.length === 0) {
+      const empty = document.createElement('div');
+      empty.style.padding = '14px';
+      empty.style.color = 'var(--muted)';
+      empty.style.fontSize = '13px';
+      empty.textContent = 'Nothing scheduled on ' + DAY_FULL[state.day] + ' for this rotation.';
+      block.appendChild(empty);
+    } else {
+      for (const row of rows) {
+        const key = rowKey(row);
+        const isDone = state.checks.has(key);
+        totalTasks++;
+        if (isDone) doneTasks++;
+
+        const taskEl = document.createElement('div');
+        taskEl.className = 'task' + (isDone ? ' done' : '');
+
+        const check = document.createElement('div');
+        check.className = 'check';
+        taskEl.appendChild(check);
+
+        const body = document.createElement('div');
+        body.className = 'task-body';
+
+        const r1 = document.createElement('div');
+        r1.className = 'task-row1';
+        if (row.time) {
+          const t = document.createElement('span');
+          t.className = 'task-time' + (/Start Time/i.test(row.time) ? ' start-time' : '');
+          t.textContent = row.time;
+          r1.appendChild(t);
+        }
+        if (row.day && row.day.toUpperCase() !== 'ALL') {
+          const dEl = document.createElement('span');
+          dEl.className = 'task-day' + (/Stat/i.test(row.day) ? ' stat' : '');
+          dEl.textContent = row.day;
+          r1.appendChild(dEl);
+        }
+        body.appendChild(r1);
+
+        const nameEl = document.createElement('div');
+        nameEl.className = 'task-name';
+        nameEl.textContent = row.task;
+        body.appendChild(nameEl);
+
+        if (row.worklist) {
+          const wl = document.createElement('div');
+          wl.className = 'task-meta task-worklist';
+          wl.innerHTML = '<b>Worklist:</b> ' + escapeHtml(row.worklist);
+          body.appendChild(wl);
+        }
+        if (row.comments) {
+          const cm = document.createElement('div');
+          cm.className = 'task-comments';
+          cm.textContent = row.comments;
+          body.appendChild(cm);
+        }
+        taskEl.appendChild(body);
+
+        taskEl.addEventListener('click', (ev) => {
+          ev.preventDefault();
+          if (state.checks.has(key)) state.checks.delete(key);
+          else state.checks.add(key);
+          saveChecks();
+          renderTasks();
+        });
+
+        block.appendChild(taskEl);
+      }
+    }
+    main.appendChild(block);
+  }
+  updateProgress(doneTasks, totalTasks);
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function updateProgress(done, total) {
+  document.getElementById('progressText').textContent =
+    total === 0 ? 'No tasks' : `${done} / ${total} complete`;
+  document.getElementById('progressFill').style.width =
+    total === 0 ? '0%' : `${Math.round(100 * done / total)}%`;
+}
+
+// ---------- bind global controls ----------
+document.getElementById('selectAllBtn').addEventListener('click', () => {
+  for (const rotations of Object.values(APP_DATA.sites)) {
+    for (const r of rotations) state.selectedRotations.add(r);
+  }
+  saveState();
+  renderRotationPicker();
+  renderRotationCount();
+  renderTasks();
+});
+document.getElementById('clearAllBtn').addEventListener('click', () => {
+  state.selectedRotations.clear();
+  saveState();
+  renderRotationPicker();
+  renderRotationCount();
+  renderTasks();
+});
+document.getElementById('statFriSwitch').addEventListener('click', () => {
+  state.statFri = !state.statFri;
+  saveState();
+  renderStatSwitches();
+  renderTasks();
+});
+document.getElementById('statMonSwitch').addEventListener('click', () => {
+  state.statMon = !state.statMon;
+  saveState();
+  renderStatSwitches();
+  renderTasks();
+});
+document.getElementById('resetTodayBtn').addEventListener('click', () => {
+  if (confirm("Reset today's checked items?")) {
+    state.checks.clear();
+    saveChecks();
+    renderTasks();
+  }
+});
+
+// Auto-roll checks at midnight (re-loads if user keeps app open across day boundary)
+setInterval(() => {
+  const cur = todayKey();
+  if (state._loadedKey && state._loadedKey !== cur) {
+    state.checks = loadTodaysChecks();
+    state._loadedKey = cur;
+    renderTasks();
+  }
+}, 60 * 1000);
+state._loadedKey = todayKey();
+
+// Initial render
+renderHeader();
+renderDayPicker();
+renderRotationPicker();
+renderRotationCount();
+renderStatSwitches();
+renderTasks();
+</script>
+</body>
+</html>
