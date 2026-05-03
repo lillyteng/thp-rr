@@ -1371,6 +1371,30 @@ renderRotationPicker();
 renderRotationCount();
 renderStatSwitches();
 renderTasks();
+
+// ---------- service worker (auto-update PWA shell) ----------
+if ('serviceWorker' in navigator) {
+  // Track whether this page already has a controller. If yes, any
+  // controllerchange event represents a real update from a prior version, and
+  // we should reload to pick up the fresh HTML. On the first install (no prior
+  // controller) we don't reload — we just let the new worker take charge.
+  let hadController = !!navigator.serviceWorker.controller;
+  let reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (reloading) return;
+    if (hadController) {
+      reloading = true;
+      window.location.reload();
+    } else {
+      hadController = true;
+    }
+  });
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js')
+      .then(reg => { reg.update(); })
+      .catch(() => {});
+  });
+}
 </script>
 </body>
 </html>
