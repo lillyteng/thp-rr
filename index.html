@@ -1016,7 +1016,13 @@ function renderTasks() {
 
   for (const rotation of orderedRotations) {
     const rows = grouped[rotation];
-    rows.sort((a, b) => compareTimes(a.time, b.time));
+    // Active tasks first (sorted by time), then completed tasks (sorted by time).
+    rows.sort((a, b) => {
+      const aDone = state.checks.has(rowKey(a));
+      const bDone = state.checks.has(rowKey(b));
+      if (aDone !== bDone) return aDone ? 1 : -1;
+      return compareTimes(a.time, b.time);
+    });
 
     const block = document.createElement('div');
     block.className = 'rotation-block';
