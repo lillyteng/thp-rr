@@ -528,6 +528,9 @@
     justify-content: center;
     transition: all 0.15s ease;
   }
+  .check {
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
   .task.done .check {
     background: var(--check-bg);
     border-color: var(--check-bg);
@@ -539,6 +542,35 @@
     border-right: 2.5px solid white;
     border-bottom: 2.5px solid white;
     transform: rotate(45deg) translate(-1px, -2px);
+  }
+  /* Satisfying check-pop on the freshly-checked row (single-shot) */
+  .task.just-checked.done .check::after {
+    animation: check-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  .task.just-checked {
+    animation: task-flash 0.6s ease;
+  }
+  @keyframes check-pop {
+    0%   { transform: rotate(45deg) translate(-1px, -2px) scale(0); opacity: 0; }
+    55%  { transform: rotate(45deg) translate(-1px, -2px) scale(1.35); opacity: 1; }
+    100% { transform: rotate(45deg) translate(-1px, -2px) scale(1); }
+  }
+  @keyframes task-flash {
+    0%, 100% { background: transparent; }
+    25%      { background: rgba(52, 199, 89, 0.18); }
+  }
+  /* Smooth crossfade for the reorder caused by check-off (modern browsers only) */
+  @supports (view-transition-name: a) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation-duration: 0.28s;
+      animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  }
+  /* Respect users who've enabled reduced motion in their OS settings */
+  @media (prefers-reduced-motion: reduce) {
+    .task.just-checked,
+    .task.just-checked.done .check::after { animation: none !important; }
   }
   .task-body { flex: 1; min-width: 0; }
   .task-row1 {
@@ -790,6 +822,7 @@ const state = {
   statMon: !!persisted.statMon,
   theme: persisted.theme || 'light',
   checks: loadTodaysChecks(),
+  _justChecked: null,
 };
 
 function setTheme(theme) {
@@ -1061,7 +1094,8 @@ function renderTasks() {
         if (isDone) doneTasks++;
 
         const taskEl = document.createElement('div');
-        taskEl.className = 'task' + (isDone ? ' done' : '');
+        taskEl.className = 'task' + (isDone ? ' done' : '')
+                                    + (state._justChecked === key ? ' just-checked' : '');
 
         const check = document.createElement('div');
         check.className = 'check';
@@ -1107,10 +1141,31 @@ function renderTasks() {
 
         taskEl.addEventListener('click', (ev) => {
           ev.preventDefault();
-          if (state.checks.has(key)) state.checks.delete(key);
-          else state.checks.add(key);
+          const wasDone = state.checks.has(key);
+          if (wasDone) {
+            state.checks.delete(key);
+            state._justChecked = null;
+          } else {
+            state.checks.add(key);
+            state._justChecked = key;
+            // Subtle haptic on supported devices (most Android, some iOS PWAs)
+            if (navigator.vibrate) {
+              try { navigator.vibrate(10); } catch (e) {}
+            }
+          }
           saveChecks();
-          renderTasks();
+          const doRender = () => {
+            renderTasks();
+            // Clear the marker shortly after so subsequent renders don't replay the animation
+            setTimeout(() => { state._justChecked = null; }, 150);
+          };
+          // Use View Transitions for a smooth slide-to-bottom on supported browsers
+          if (document.startViewTransition) {
+            try { document.startViewTransition(doRender); }
+            catch (e) { doRender(); }
+          } else {
+            doRender();
+          }
         });
 
         block.appendChild(taskEl);
