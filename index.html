@@ -88,27 +88,61 @@
   .h-right {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
   }
-  .theme-btn, .menu-btn {
+  /* Segmented light/dark toggle — both options visible, active one highlighted */
+  .theme-toggle {
+    display: inline-flex;
+    background: rgba(255,255,255,0.18);
+    border-radius: 14px;
+    padding: 2px;
+  }
+  .theme-opt {
+    background: transparent;
+    color: rgba(255,255,255,0.7);
+    border: none;
+    width: 28px;
+    height: 24px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.18s ease, color 0.18s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .theme-opt.active {
+    background: white;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .menu-btn {
     background: rgba(255,255,255,0.18);
     color: white;
     border: none;
     border-radius: 50%;
     width: 28px;
     height: 28px;
-    font-size: 14px;
+    font-size: 16px;
+    font-weight: 700;
     line-height: 1;
     cursor: pointer;
     padding: 0;
     -webkit-tap-highlight-color: transparent;
   }
-  .menu-btn {
-    font-size: 16px;
-    font-weight: 700;
-  }
-  .theme-btn:active, .menu-btn:active {
-    background: rgba(255,255,255,0.32);
+  .menu-btn:active { background: rgba(255,255,255,0.32); }
+  /* Second header row — version on the left, progress on the right */
+  .h-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-top: 3px;
+    font-size: 10px;
+    opacity: 0.9;
   }
   /* ---- Menu sheet ---- */
   .menu-overlay {
@@ -730,17 +764,20 @@
 <body>
 <header>
   <div class="h-row">
-    <div>
-      <div class="title">THP Reporting Responsibilities</div>
-      <div class="version" id="version">VERSION ?</div>
-    </div>
+    <div class="title">THP Reporting Responsibilities</div>
     <div class="h-right">
-      <button class="theme-btn" id="themeBtn" aria-label="Toggle light/dark mode" title="Toggle theme">☾</button>
-      <button class="menu-btn" id="menuBtn" aria-label="Open menu" title="Menu">☰</button>
-      <div class="progress">
-        <span id="progressText">0 / 0</span>
-        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="theme-toggle" role="group" aria-label="Theme">
+        <button class="theme-opt" id="themeLightBtn" aria-label="Light mode" title="Light mode">☀</button>
+        <button class="theme-opt" id="themeDarkBtn"  aria-label="Dark mode"  title="Dark mode">☾</button>
       </div>
+      <button class="menu-btn" id="menuBtn" aria-label="Open menu" title="Menu">☰</button>
+    </div>
+  </div>
+  <div class="h-meta">
+    <span class="version" id="version">VERSION ?</span>
+    <div class="progress">
+      <span id="progressText">0 / 0</span>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
     </div>
   </div>
 </header>
@@ -925,8 +962,10 @@ const state = {
 function setTheme(theme) {
   state.theme = theme;
   document.documentElement.setAttribute('data-theme', theme);
-  const btn = document.getElementById('themeBtn');
-  if (btn) btn.textContent = (theme === 'dark') ? '☀' : '☾';
+  const lightBtn = document.getElementById('themeLightBtn');
+  const darkBtn = document.getElementById('themeDarkBtn');
+  if (lightBtn) lightBtn.classList.toggle('active', theme === 'light');
+  if (darkBtn)  darkBtn.classList.toggle('active', theme === 'dark');
   saveState();
 }
 
@@ -1323,9 +1362,8 @@ document.getElementById('resetTodayBtn').addEventListener('click', () => {
     renderTasks();
   }
 });
-document.getElementById('themeBtn').addEventListener('click', () => {
-  setTheme(state.theme === 'dark' ? 'light' : 'dark');
-});
+document.getElementById('themeLightBtn').addEventListener('click', () => setTheme('light'));
+document.getElementById('themeDarkBtn').addEventListener('click', () => setTheme('dark'));
 
 // ---------- cascading search: Task → Day → Time → Rotation ----------
 const DAY_OPTIONS = [
