@@ -89,8 +89,8 @@
     min-width: 0;
   }
   .h-logo {
-    width: 96px;
-    height: 96px;
+    width: 84px;
+    height: 84px;
     flex-shrink: 0;
     display: block;
   }
@@ -100,11 +100,13 @@
     display: block;
     overflow: visible;
   }
-  /* Spin the arrow group whenever .spinning is added; transform-origin is the
-     badge centre at 100,100 in the 200×200 viewBox. */
+  /* Spin the arrow group whenever .spinning is added. Use transform-box:
+     view-box so transform-origin is interpreted in the SVG viewBox coordinate
+     system, with (100,100) being the badge centre — keeps rotation perfectly
+     concentric instead of pivoting on the arrows' own bounding box. */
   .h-logo .badge-arrows {
     transform-origin: 100px 100px;
-    transform-box: fill-box;
+    transform-box: view-box;
   }
   .h-logo .badge-arrows.spinning {
     animation: badgeSpin 1.0s cubic-bezier(0.34, 1.15, 0.5, 1) 1 both;
