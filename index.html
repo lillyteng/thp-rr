@@ -247,6 +247,68 @@
     border-bottom: 1px solid var(--border);
     margin-bottom: 4px;
   }
+  /* ---- In-app PDF viewer ---- */
+  .pdf-viewer {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+  }
+  .pdf-viewer[hidden] { display: none; }
+  .pdf-viewer-header {
+    background: var(--accent);
+    color: white;
+    padding: 10px 12px;
+    padding-top: calc(10px + env(safe-area-inset-top));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  }
+  .pdf-viewer-title {
+    font-size: 14px;
+    font-weight: 600;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .pdf-viewer-close {
+    background: rgba(255,255,255,0.18);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .pdf-viewer-close:active { background: rgba(255,255,255,0.32); }
+  .pdf-viewer iframe {
+    flex: 1;
+    width: 100%;
+    border: none;
+    background: var(--bg);
+  }
+  /* On iOS, embedded PDFs sometimes show only the first page; offer a fallback
+     "Open in new tab" pill that the user can tap if scrolling fails. */
+  .pdf-viewer-fallback {
+    background: rgba(255,255,255,0.12);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 14px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+  }
   /* ---- Menu sheet ---- */
   .menu-overlay {
     position: fixed;
@@ -1022,12 +1084,21 @@
 </section>
 </div>
 
+<div class="pdf-viewer" id="pdfViewer" hidden>
+  <div class="pdf-viewer-header">
+    <button class="pdf-viewer-close" id="pdfCloseBtn" aria-label="Close PDF" title="Close PDF">×</button>
+    <div class="pdf-viewer-title" id="pdfViewerTitle">PDF</div>
+    <a class="pdf-viewer-fallback" id="pdfOpenExternal" href="#" target="_blank" rel="noopener">Open ↗</a>
+  </div>
+  <iframe id="pdfFrame" title="PDF preview"></iframe>
+</div>
+
 <div class="menu-overlay" id="menuOverlay" hidden>
   <div class="menu-sheet">
     <div class="menu-version" id="menuVersion">VERSION ?</div>
     <button class="menu-item" data-action="search">Find rotation by task</button>
-    <a class="menu-item" data-action="pdf-rotation" href="THP-RR.pdf" target="_blank" rel="noopener">PDF version (by rotation)</a>
-    <a class="menu-item" data-action="pdf-task" href="THP-RR-by-Task.pdf" target="_blank" rel="noopener">PDF version (by task)</a>
+    <button class="menu-item" data-action="pdf-rotation">PDF version (by rotation)</button>
+    <button class="menu-item" data-action="pdf-task">PDF version (by task)</button>
     <button class="menu-item cancel" data-action="cancel">Cancel</button>
   </div>
 </div>
@@ -1803,7 +1874,7 @@ menuOverlay.addEventListener('click', (e) => {
   if (e.target === menuOverlay) closeMenu();
 });
 
-// Buttons inside the menu (search, cancel)
+// Buttons inside the menu (search, cancel, PDFs)
 menuOverlay.querySelectorAll('.menu-item').forEach(item => {
   item.addEventListener('click', (e) => {
     const action = item.dataset.action;
@@ -1814,14 +1885,44 @@ menuOverlay.querySelectorAll('.menu-item').forEach(item => {
     } else if (action === 'cancel') {
       e.preventDefault();
       closeMenu();
-    } else if (action && action.startsWith('pdf')) {
-      // Anchor with target=_blank: let it navigate, but close the sheet
+    } else if (action === 'pdf-rotation') {
+      e.preventDefault();
       closeMenu();
+      openPdfViewer('THP-RR.pdf', 'THP RR — by rotation');
+    } else if (action === 'pdf-task') {
+      e.preventDefault();
+      closeMenu();
+      openPdfViewer('THP-RR-by-Task.pdf', 'THP RR — by task');
     }
   });
 });
 
 document.getElementById('backFromSearch').addEventListener('click', showMainView);
+
+// ---------- in-app PDF viewer ----------
+const pdfViewer = document.getElementById('pdfViewer');
+const pdfFrame = document.getElementById('pdfFrame');
+const pdfTitle = document.getElementById('pdfViewerTitle');
+const pdfFallback = document.getElementById('pdfOpenExternal');
+function openPdfViewer(url, title) {
+  pdfTitle.textContent = title;
+  pdfFallback.href = url;
+  pdfFrame.src = url;
+  pdfViewer.hidden = false;
+  // Lock background scroll while the PDF is open
+  document.body.style.overflow = 'hidden';
+}
+function closePdfViewer() {
+  pdfViewer.hidden = true;
+  // Drop the iframe src so it doesn't keep the PDF in memory
+  pdfFrame.src = 'about:blank';
+  document.body.style.overflow = '';
+}
+document.getElementById('pdfCloseBtn').addEventListener('click', closePdfViewer);
+// Esc key also closes (helpful on desktop)
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !pdfViewer.hidden) closePdfViewer();
+});
 
 // Auto-roll checks at midnight (re-loads if user keeps app open across day boundary)
 setInterval(() => {
