@@ -89,8 +89,8 @@
     min-width: 0;
   }
   .h-logo {
-    width: 72px;
-    height: 72px;
+    width: 96px;
+    height: 96px;
     flex-shrink: 0;
     display: block;
   }
@@ -100,11 +100,10 @@
     display: block;
     overflow: visible;
   }
-  /* Spin the arrow group whenever .spinning is added; transform-origin must
-     account for the badge translate(40 40) inside the curved-text SVG
-     (badge centre at 140 140 in the 280×280 viewBox). */
+  /* Spin the arrow group whenever .spinning is added; transform-origin is the
+     badge centre at 100,100 in the 200×200 viewBox. */
   .h-logo .badge-arrows {
-    transform-origin: 140px 140px;
+    transform-origin: 100px 100px;
     transform-box: fill-box;
   }
   .h-logo .badge-arrows.spinning {
@@ -811,7 +810,7 @@
 <header>
   <div class="h-row">
     <div class="h-left">
-      <div class="h-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 280" aria-hidden="true">
+      <div class="h-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" aria-hidden="true">
   <defs>
     <linearGradient id="bRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#0D4F5C"/><stop offset="100%" stop-color="#0A2E3A"/>
@@ -824,68 +823,51 @@
     </radialGradient>
     <filter id="bGlow"><feGaussianBlur stdDeviation="1.5" result="blur"/>
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-    <path id="bTopArc"   d="M 25 110 A 122 122 0 0 1 255 110" fill="none"/>
-    <path id="bLeftArc"  d="M 70 35  A 122 122 0 0 0 70 245"  fill="none"/>
-    <path id="bRightArc" d="M 210 35 A 122 122 0 0 1 210 245" fill="none"/>
   </defs>
-  <rect width="280" height="280" fill="#F7F4EF" rx="56"/>
-  <g font-family="Helvetica, Arial, sans-serif" fill="#0A2E3A">
-    <text font-size="22" font-weight="700" letter-spacing="8">
-      <textPath href="#bTopArc" startOffset="50%" text-anchor="middle">THP</textPath>
-    </text>
-    <text font-size="14" font-weight="600" letter-spacing="3">
-      <textPath href="#bLeftArc" startOffset="50%" text-anchor="middle">RADIOLOGY</textPath>
-    </text>
-    <text font-size="14" font-weight="600" letter-spacing="3">
-      <textPath href="#bRightArc" startOffset="50%" text-anchor="middle">ROTATIONS</textPath>
-    </text>
+  <circle cx="100" cy="100" r="98" fill="url(#bRingGrad)"/>
+  <g stroke="#E8A020" stroke-width="2.1" opacity="0.6">
+    <line x1="100" y1="14" x2="100" y2="24" transform="rotate(0 100 100)"/>
+    <line x1="100" y1="14" x2="100" y2="24" transform="rotate(30 100 100)"/>
+    <line x1="100" y1="14" x2="100" y2="24" transform="rotate(60 100 100)"/>
+    <line x1="100" y1="14" x2="100" y2="24" transform="rotate(90 100 100)"/>
+    <line x1="100" y1="14" x2="100" y2="24" transform="rotate(120 100 100)"/>
+    <line x1="100" y1="14" x2="100" y2="24" transform="rotate(150 100 100)"/>
+    <line x1="100" y1="14" x2="100" y2="24" transform="rotate(180 100 100)"/>
+    <line x1="100" y1="14" x2="100" y2="24" transform="rotate(210 100 100)"/>
+    <line x1="100" y1="14" x2="100" y2="24" transform="rotate(240 100 100)"/>
+    <line x1="100" y1="14" x2="100" y2="24" transform="rotate(270 100 100)"/>
+    <line x1="100" y1="14" x2="100" y2="24" transform="rotate(300 100 100)"/>
+    <line x1="100" y1="14" x2="100" y2="24" transform="rotate(330 100 100)"/>
   </g>
-  <g transform="translate(40 40)">
-    <circle cx="100" cy="100" r="82" fill="url(#bRingGrad)"/>
-    <g stroke="#E8A020" stroke-width="1.8" opacity="0.6">
-      <line x1="100" y1="22" x2="100" y2="30" transform="rotate(0 100 100)"/>
-      <line x1="100" y1="22" x2="100" y2="30" transform="rotate(30 100 100)"/>
-      <line x1="100" y1="22" x2="100" y2="30" transform="rotate(60 100 100)"/>
-      <line x1="100" y1="22" x2="100" y2="30" transform="rotate(90 100 100)"/>
-      <line x1="100" y1="22" x2="100" y2="30" transform="rotate(120 100 100)"/>
-      <line x1="100" y1="22" x2="100" y2="30" transform="rotate(150 100 100)"/>
-      <line x1="100" y1="22" x2="100" y2="30" transform="rotate(180 100 100)"/>
-      <line x1="100" y1="22" x2="100" y2="30" transform="rotate(210 100 100)"/>
-      <line x1="100" y1="22" x2="100" y2="30" transform="rotate(240 100 100)"/>
-      <line x1="100" y1="22" x2="100" y2="30" transform="rotate(270 100 100)"/>
-      <line x1="100" y1="22" x2="100" y2="30" transform="rotate(300 100 100)"/>
-      <line x1="100" y1="22" x2="100" y2="30" transform="rotate(330 100 100)"/>
-    </g>
-    <g stroke="#5A9BAA" stroke-width="1" opacity="0.4">
-      <line x1="100" y1="22" x2="100" y2="27" transform="rotate(15 100 100)"/>
-      <line x1="100" y1="22" x2="100" y2="27" transform="rotate(45 100 100)"/>
-      <line x1="100" y1="22" x2="100" y2="27" transform="rotate(75 100 100)"/>
-      <line x1="100" y1="22" x2="100" y2="27" transform="rotate(105 100 100)"/>
-      <line x1="100" y1="22" x2="100" y2="27" transform="rotate(135 100 100)"/>
-      <line x1="100" y1="22" x2="100" y2="27" transform="rotate(165 100 100)"/>
-      <line x1="100" y1="22" x2="100" y2="27" transform="rotate(195 100 100)"/>
-      <line x1="100" y1="22" x2="100" y2="27" transform="rotate(225 100 100)"/>
-      <line x1="100" y1="22" x2="100" y2="27" transform="rotate(255 100 100)"/>
-      <line x1="100" y1="22" x2="100" y2="27" transform="rotate(285 100 100)"/>
-      <line x1="100" y1="22" x2="100" y2="27" transform="rotate(315 100 100)"/>
-      <line x1="100" y1="22" x2="100" y2="27" transform="rotate(345 100 100)"/>
-    </g>
-    <circle cx="100" cy="100" r="75" fill="none" stroke="url(#bAccentGrad)" stroke-width="2.5"
-            stroke-dasharray="353 118" stroke-dashoffset="59" opacity="0.85"/>
-    <circle cx="100" cy="100" r="58" fill="url(#bDiskGlow)"/>
-    <line x1="52" y1="100" x2="148" y2="100" stroke="#5FC8D8" stroke-width="0.8" opacity="0.45"/>
-    <line x1="100" y1="52" x2="100" y2="148" stroke="#5FC8D8" stroke-width="0.8" opacity="0.45"/>
-    <g class="badge-arrows">
-      <path d="M 65 72 A 38 38 0 0 1 135 72" fill="none" stroke="#E8A020" stroke-width="3"
-            stroke-linecap="round" filter="url(#bGlow)"/>
-      <polygon points="135,72 125,65 130,78" fill="#E8A020" filter="url(#bGlow)"/>
-      <path d="M 135 128 A 38 38 0 0 1 65 128" fill="none" stroke="#5FC8D8" stroke-width="3"
-            stroke-linecap="round"/>
-      <polygon points="65,128 75,135 70,122" fill="#5FC8D8"/>
-    </g>
-    <circle cx="100" cy="100" r="9" fill="none" stroke="#F0EAE0" stroke-width="1.8" opacity="0.9"/>
-    <circle cx="100" cy="100" r="2.5" fill="#F5C842"/>
+  <g stroke="#5A9BAA" stroke-width="1.1" opacity="0.4">
+    <line x1="100" y1="14" x2="100" y2="20" transform="rotate(15 100 100)"/>
+    <line x1="100" y1="14" x2="100" y2="20" transform="rotate(45 100 100)"/>
+    <line x1="100" y1="14" x2="100" y2="20" transform="rotate(75 100 100)"/>
+    <line x1="100" y1="14" x2="100" y2="20" transform="rotate(105 100 100)"/>
+    <line x1="100" y1="14" x2="100" y2="20" transform="rotate(135 100 100)"/>
+    <line x1="100" y1="14" x2="100" y2="20" transform="rotate(165 100 100)"/>
+    <line x1="100" y1="14" x2="100" y2="20" transform="rotate(195 100 100)"/>
+    <line x1="100" y1="14" x2="100" y2="20" transform="rotate(225 100 100)"/>
+    <line x1="100" y1="14" x2="100" y2="20" transform="rotate(255 100 100)"/>
+    <line x1="100" y1="14" x2="100" y2="20" transform="rotate(285 100 100)"/>
+    <line x1="100" y1="14" x2="100" y2="20" transform="rotate(315 100 100)"/>
+    <line x1="100" y1="14" x2="100" y2="20" transform="rotate(345 100 100)"/>
   </g>
+  <circle cx="100" cy="100" r="89" fill="none" stroke="url(#bAccentGrad)" stroke-width="3"
+          stroke-dasharray="420 140" stroke-dashoffset="70" opacity="0.85"/>
+  <circle cx="100" cy="100" r="69" fill="url(#bDiskGlow)"/>
+  <line x1="44" y1="100" x2="156" y2="100" stroke="#5FC8D8" stroke-width="0.9" opacity="0.45"/>
+  <line x1="100" y1="44" x2="100" y2="156" stroke="#5FC8D8" stroke-width="0.9" opacity="0.45"/>
+  <g class="badge-arrows">
+    <path d="M 58 67 A 45 45 0 0 1 142 67" fill="none" stroke="#E8A020" stroke-width="3.5"
+          stroke-linecap="round" filter="url(#bGlow)"/>
+    <polygon points="142,67 130,59 136,74" fill="#E8A020" filter="url(#bGlow)"/>
+    <path d="M 142 133 A 45 45 0 0 1 58 133" fill="none" stroke="#5FC8D8" stroke-width="3.5"
+          stroke-linecap="round"/>
+    <polygon points="58,133 70,141 64,126" fill="#5FC8D8"/>
+  </g>
+  <circle cx="100" cy="100" r="11" fill="none" stroke="#F0EAE0" stroke-width="2" opacity="0.9"/>
+  <circle cx="100" cy="100" r="3" fill="#F5C842"/>
 </svg></div>
       <div class="title">THP Reporting Responsibilities</div>
     </div>
