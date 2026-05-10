@@ -89,8 +89,8 @@
     min-width: 0;
   }
   .h-logo {
-    width: 84px;
-    height: 84px;
+    width: 56px;
+    height: 56px;
     flex-shrink: 0;
     display: block;
   }
@@ -142,16 +142,16 @@
     display: inline-flex;
     background: rgba(255,255,255,0.18);
     border-radius: 14px;
-    padding: 2px;
+    padding: 3px;
   }
   .theme-opt {
     background: transparent;
-    color: rgba(255,255,255,0.7);
+    color: rgba(255,255,255,0.75);
     border: none;
-    width: 28px;
-    height: 24px;
-    border-radius: 12px;
-    font-size: 13px;
+    width: 36px;
+    height: 32px;
+    border-radius: 14px;
+    font-size: 17px;
     line-height: 1;
     cursor: pointer;
     padding: 0;
@@ -171,9 +171,9 @@
     color: white;
     border: none;
     border-radius: 50%;
-    width: 28px;
-    height: 28px;
-    font-size: 16px;
+    width: 38px;
+    height: 38px;
+    font-size: 20px;
     font-weight: 700;
     line-height: 1;
     cursor: pointer;
@@ -181,15 +181,71 @@
     -webkit-tap-highlight-color: transparent;
   }
   .menu-btn:active { background: rgba(255,255,255,0.32); }
-  /* Second header row — version on the left, progress on the right */
+  /* Font-size adjuster — A- / A+ pair just left of the theme toggle */
+  .font-sizer {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255,255,255,0.16);
+    border-radius: 16px;
+    padding: 3px;
+    gap: 1px;
+  }
+  .font-sizer button {
+    background: transparent;
+    color: white;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 13px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .font-sizer button:active { background: rgba(255,255,255,0.28); }
+  .font-sizer button[disabled] { opacity: 0.4; cursor: default; }
+  .font-sizer .small  { font-size: 11px; }
+  .font-sizer .large  { font-size: 16px; }
+  /* Second header row — progress only (version moved to menu) */
   .h-meta {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     gap: 10px;
     margin-top: 3px;
-    font-size: 10px;
+    font-size: 11px;
     opacity: 0.9;
+  }
+  /* Show / hide rotation selector toggle (lives at top of controls section) */
+  .selector-toggle-row {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0 0 6px 0;
+  }
+  .selector-toggle-btn {
+    background: var(--card);
+    color: var(--accent);
+    border: 1.5px solid var(--accent);
+    border-radius: 999px;
+    padding: 7px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .selector-toggle-btn:active { background: var(--bg); }
+  .menu-version {
+    padding: 14px 18px;
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
   }
   /* ---- Menu sheet ---- */
   .menu-overlay {
@@ -874,6 +930,10 @@
       <div class="title">THP Reporting Responsibilities</div>
     </div>
     <div class="h-right">
+      <div class="font-sizer" role="group" aria-label="Text size">
+        <button id="fontDownBtn" aria-label="Decrease text size" title="Smaller text"><span class="small">A−</span></button>
+        <button id="fontUpBtn"   aria-label="Increase text size" title="Larger text"><span class="large">A+</span></button>
+      </div>
       <div class="theme-toggle" role="group" aria-label="Theme">
         <button class="theme-opt" id="themeLightBtn" aria-label="Light mode" title="Light mode">☀</button>
         <button class="theme-opt" id="themeDarkBtn"  aria-label="Dark mode"  title="Dark mode">☾</button>
@@ -882,7 +942,6 @@
     </div>
   </div>
   <div class="h-meta">
-    <span class="version" id="version">VERSION ?</span>
     <div class="progress">
       <span id="progressText">0 / 0</span>
       <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
@@ -890,46 +949,53 @@
   </div>
 </header>
 
+<div id="scaleScope">
 <section class="controls">
   <div class="today-date" id="todayDate">Today is …</div>
-  <div class="day-row" id="dayPicker"></div>
 
-  <details class="disclosure" id="rotationDisclosure" open>
-    <summary>
-      <span><span id="rotationCountLabel">0 rotations selected</span></span>
-    </summary>
-    <div class="disclosure-body">
-      <div class="picker-actions">
-        <button id="doneBtn" class="picker-primary">Hide Rotation Selector</button>
-        <button id="resetBtn">Reset selection</button>
-      </div>
-      <div id="rotationPicker"></div>
-    </div>
-  </details>
+  <div class="selector-toggle-row">
+    <button id="selectorToggleBtn" class="selector-toggle-btn">Hide Rotation Selector</button>
+  </div>
 
-  <details class="disclosure">
-    <summary>
-      <span>Stat day overrides</span>
-    </summary>
-    <div class="disclosure-body">
-      <div class="stat-toggles">
-        <div class="switch-row">
-          <div>
-            <div class="label-text">Today is the day after a Stat Friday</div>
-            <div class="label-sub">Adds Mon-after-Stat-Fri reporting rows when day = Monday.</div>
-          </div>
-          <div class="switch" id="statFriSwitch"></div>
+  <div id="selectorBlock">
+    <div class="day-row" id="dayPicker"></div>
+
+    <details class="disclosure" id="rotationDisclosure" open>
+      <summary>
+        <span><span id="rotationCountLabel">0 rotations selected</span></span>
+      </summary>
+      <div class="disclosure-body">
+        <div class="picker-actions">
+          <button id="resetBtn">Reset selection</button>
         </div>
-        <div class="switch-row">
-          <div>
-            <div class="label-text">Today is the day after a Stat Monday</div>
-            <div class="label-sub">Adds Tues-after-Stat-Mon reporting rows when day = Tuesday.</div>
+        <div id="rotationPicker"></div>
+      </div>
+    </details>
+
+    <details class="disclosure">
+      <summary>
+        <span>Stat day overrides</span>
+      </summary>
+      <div class="disclosure-body">
+        <div class="stat-toggles">
+          <div class="switch-row">
+            <div>
+              <div class="label-text">Today is the day after a Stat Friday</div>
+              <div class="label-sub">Adds Mon-after-Stat-Fri reporting rows when day = Monday.</div>
+            </div>
+            <div class="switch" id="statFriSwitch"></div>
           </div>
-          <div class="switch" id="statMonSwitch"></div>
+          <div class="switch-row">
+            <div>
+              <div class="label-text">Today is the day after a Stat Monday</div>
+              <div class="label-sub">Adds Tues-after-Stat-Mon reporting rows when day = Tuesday.</div>
+            </div>
+            <div class="switch" id="statMonSwitch"></div>
+          </div>
         </div>
       </div>
-    </div>
-  </details>
+    </details>
+  </div>
 </section>
 
 <main id="taskList"></main>
@@ -954,9 +1020,11 @@
   <div id="searchResult" class="search-result"></div>
   <button class="search-reset-btn" id="searchReset">Reset search</button>
 </section>
+</div>
 
 <div class="menu-overlay" id="menuOverlay" hidden>
   <div class="menu-sheet">
+    <div class="menu-version" id="menuVersion">VERSION ?</div>
     <button class="menu-item" data-action="search">Find rotation by task</button>
     <a class="menu-item" data-action="pdf-rotation" href="THP-RR.pdf" target="_blank" rel="noopener">PDF version (by rotation)</a>
     <a class="menu-item" data-action="pdf-task" href="THP-RR-by-Task.pdf" target="_blank" rel="noopener">PDF version (by task)</a>
@@ -1012,6 +1080,8 @@ function saveState() {
       statFri: state.statFri,
       statMon: state.statMon,
       theme: state.theme,
+      selectorHidden: state.selectorHidden,
+      fontScale: state.fontScale,
     }));
   } catch (e) {}
 }
@@ -1063,6 +1133,8 @@ const state = {
   statFri: !!persisted.statFri,
   statMon: !!persisted.statMon,
   theme: persisted.theme || 'light',
+  selectorHidden: !!persisted.selectorHidden,
+  fontScale: typeof persisted.fontScale === 'number' ? persisted.fontScale : 1.0,
   checks: loadTodaysChecks(),
   _justChecked: null,
 };
@@ -1138,7 +1210,49 @@ function rowKey(row) {
 
 // ---------- rendering ----------
 function renderHeader() {
-  document.getElementById('version').textContent = 'VERSION ' + APP_DATA.version_date;
+  // Version moved into the menu sheet
+  const mv = document.getElementById('menuVersion');
+  if (mv) mv.textContent = 'VERSION ' + APP_DATA.version_date;
+}
+
+// ---------- font-size scaling ----------
+const FONT_MIN = 0.85;
+const FONT_MAX = 1.45;
+const FONT_STEP = 0.1;
+function applyFontScale() {
+  // Clamp into range
+  if (state.fontScale < FONT_MIN) state.fontScale = FONT_MIN;
+  if (state.fontScale > FONT_MAX) state.fontScale = FONT_MAX;
+  // CSS `zoom` scales every visual unit in its subtree — works on all current
+  // mobile browsers (iOS Safari, Chrome, Edge, Firefox 126+). We apply it to
+  // the controls + task-list sections, leaving the header at fixed size so the
+  // A+/A- buttons themselves don't change scale.
+  const scope = document.getElementById('scaleScope');
+  if (scope) scope.style.zoom = state.fontScale;
+  // Update button enabled/disabled state
+  const dn = document.getElementById('fontDownBtn');
+  const up = document.getElementById('fontUpBtn');
+  if (dn) dn.disabled = state.fontScale <= FONT_MIN + 0.001;
+  if (up) up.disabled = state.fontScale >= FONT_MAX - 0.001;
+}
+function bumpFont(delta) {
+  state.fontScale = Math.round((state.fontScale + delta) * 100) / 100;
+  applyFontScale();
+  saveState();
+}
+
+// ---------- show/hide rotation selector ----------
+function applySelectorVisibility() {
+  const block = document.getElementById('selectorBlock');
+  const btn = document.getElementById('selectorToggleBtn');
+  if (!block || !btn) return;
+  if (state.selectorHidden) {
+    block.style.display = 'none';
+    btn.textContent = 'Show Rotation Selector';
+  } else {
+    block.style.display = '';
+    btn.textContent = 'Hide Rotation Selector';
+  }
 }
 
 function renderTodayDate() {
@@ -1392,6 +1506,8 @@ function renderTasks() {
           } else {
             state.checks.add(key);
             state._justChecked = key;
+            // Spin the badge as the satisfying "task done" cue
+            if (typeof spinBadge === 'function') spinBadge();
             // Subtle haptic on supported devices (most Android, some iOS PWAs)
             if (navigator.vibrate) {
               try { navigator.vibrate(10); } catch (e) {}
@@ -1434,16 +1550,19 @@ function updateProgress(done, total) {
 }
 
 // ---------- bind global controls ----------
-document.getElementById('doneBtn').addEventListener('click', () => {
-  // Collapse the picker once the user has made their selection.
-  const disclosure = document.getElementById('rotationDisclosure');
-  disclosure.removeAttribute('open');
+document.getElementById('selectorToggleBtn').addEventListener('click', () => {
+  state.selectorHidden = !state.selectorHidden;
+  applySelectorVisibility();
   saveState();
-  // Scroll to the task list so the user sees the result immediately.
-  setTimeout(() => {
-    document.getElementById('taskList').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, 50);
+  if (state.selectorHidden) {
+    // Scroll to the task list so the user sees more rows immediately
+    setTimeout(() => {
+      document.getElementById('taskList').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  }
 });
+document.getElementById('fontUpBtn').addEventListener('click', () => bumpFont(FONT_STEP));
+document.getElementById('fontDownBtn').addEventListener('click', () => bumpFont(-FONT_STEP));
 document.getElementById('resetBtn').addEventListener('click', () => {
   state.selectedRotations.clear();
   saveState();
@@ -1717,6 +1836,8 @@ state._loadedKey = todayKey();
 
 // Initial render
 setTheme(state.theme);
+applyFontScale();
+applySelectorVisibility();
 renderHeader();
 renderTodayDate();
 renderDayPicker();
@@ -1725,7 +1846,7 @@ renderRotationCount();
 renderStatSwitches();
 renderTasks();
 
-// ---------- spin the badge on every meaningful interaction ----------
+// ---------- spin the badge ONLY on a task being checked off ----------
 function spinBadge() {
   const arrows = document.querySelector('.h-logo .badge-arrows');
   if (!arrows) return;
@@ -1734,24 +1855,8 @@ function spinBadge() {
   void arrows.getBoundingClientRect();
   arrows.classList.add('spinning');
 }
-// Spin on initial load
+// Spin once on initial load as a subtle "the app is ready" cue
 window.addEventListener('load', () => setTimeout(spinBadge, 200));
-// Spin on any actionable click. Captures buttons, chips, summaries, the menu, etc.
-document.addEventListener('click', (ev) => {
-  if (ev.target.closest(
-    '.day-chip, .rotation-chip, .menu-btn, .theme-opt, ' +
-    '.menu-item, .switch, .task, .picker-actions button, ' +
-    '.search-reset-btn, .reset-button, summary, .back-btn, ' +
-    '#themeLightBtn, #themeDarkBtn, #searchTask, #searchDay, #searchTime'
-  )) {
-    spinBadge();
-  }
-}, true);
-// Also fire on dropdown changes (these don't bubble through 'click')
-['searchTask','searchDay','searchTime'].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) el.addEventListener('change', spinBadge);
-});
 
 // ---------- service worker (auto-update PWA shell) ----------
 if ('serviceWorker' in navigator) {
