@@ -17,6 +17,7 @@
     --card: #FFFFFF;
     --text: #0D2E3A;       /* deep teal-navy text */
     --muted: #6B8B96;
+    --comment: #324A56;    /* darker than --muted so comments read clearly */
     --border: #DCD6CC;
     --accent: #0D4F5C;     /* primary deep teal */
     --accent-dark: #0A2E3A;
@@ -42,6 +43,7 @@
     --card: #162028;
     --text: #D8ECF2;
     --muted: #6A8898;
+    --comment: #B8CDD4;
     --border: #233340;
     --accent: #1A6478;
     --accent-dark: #0E3A48;
@@ -894,16 +896,16 @@
   }
   .task-meta {
     margin-top: 4px;
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.4;
+    font-size: 14px;
+    color: var(--comment);
+    line-height: 1.45;
   }
   .task-meta b { color: var(--text); font-weight: 600; }
   .task-comments {
     margin-top: 4px;
-    font-size: 13px;
-    line-height: 1.4;
-    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--comment);
   }
   /* Footer */
   footer {
