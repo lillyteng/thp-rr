@@ -330,6 +330,8 @@
     border-radius: 16px 16px 0 0;
     padding: 8px 8px max(12px, env(safe-area-inset-bottom)) 8px;
     animation: m-up 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+    max-height: 85vh;
+    overflow-y: auto;
   }
   .menu-item {
     display: block;
@@ -1099,8 +1101,12 @@
   <div class="menu-sheet">
     <div class="menu-version" id="menuVersion">VERSION ?</div>
     <button class="menu-item" data-action="search">Find rotation by task</button>
-    <button class="menu-item" data-action="pdf-rotation">PDF version (by rotation)</button>
-    <button class="menu-item" data-action="pdf-task">PDF version (by task)</button>
+    <button class="menu-item" data-action="pdf-rotation">General PDF version (by rotation)</button>
+    <button class="menu-item" data-action="pdf-task">General PDF version (by task)</button>
+    <button class="menu-item" data-action="pdf-mon-rotation">Mon after Stat Day PDF version (by rotation)</button>
+    <button class="menu-item" data-action="pdf-mon-task">Mon after Stat Day PDF version (by task)</button>
+    <button class="menu-item" data-action="pdf-tues-rotation">Tues after Stat Day PDF version (by rotation)</button>
+    <button class="menu-item" data-action="pdf-tues-task">Tues after Stat Day PDF version (by task)</button>
     <button class="menu-item cancel" data-action="cancel">Cancel</button>
   </div>
 </div>
@@ -1890,11 +1896,27 @@ menuOverlay.querySelectorAll('.menu-item').forEach(item => {
     } else if (action === 'pdf-rotation') {
       e.preventDefault();
       closeMenu();
-      openPdfViewer('THP-RR.pdf', 'THP RR — by rotation');
+      openPdfViewer('THP-RR.pdf', 'THP RR — General (by rotation)');
     } else if (action === 'pdf-task') {
       e.preventDefault();
       closeMenu();
-      openPdfViewer('THP-RR-by-Task.pdf', 'THP RR — by task');
+      openPdfViewer('THP-RR-by-Task.pdf', 'THP RR — General (by task)');
+    } else if (action === 'pdf-mon-rotation') {
+      e.preventDefault();
+      closeMenu();
+      openPdfViewer('THP-RR-PostStat-Mon.pdf', 'Mon after Stat Fri — by rotation');
+    } else if (action === 'pdf-mon-task') {
+      e.preventDefault();
+      closeMenu();
+      openPdfViewer('THP-RR-PostStat-Mon-by-Task.pdf', 'Mon after Stat Fri — by task');
+    } else if (action === 'pdf-tues-rotation') {
+      e.preventDefault();
+      closeMenu();
+      openPdfViewer('THP-RR-PostStat-Tues.pdf', 'Tues after Stat Mon — by rotation');
+    } else if (action === 'pdf-tues-task') {
+      e.preventDefault();
+      closeMenu();
+      openPdfViewer('THP-RR-PostStat-Tues-by-Task.pdf', 'Tues after Stat Mon — by task');
     }
   });
 });
