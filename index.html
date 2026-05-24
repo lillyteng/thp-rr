@@ -807,17 +807,11 @@
   }
   .confetti-piece {
     position: absolute;
-    top: -20px;
+    top: 0;
+    left: 0;
     border-radius: 2px;
     opacity: 0.95;
     will-change: transform;
-    animation-name: confetti-fall;
-    animation-timing-function: cubic-bezier(0.25, 0.6, 0.4, 1);
-    animation-fill-mode: forwards;
-  }
-  @keyframes confetti-fall {
-    0%   { transform: translate(0, -10vh) rotate(0deg); }
-    100% { transform: translate(var(--drift, 0px), 110vh) rotate(var(--rot, 360deg)); }
   }
   .rotation-meta {
     font-size: 12px;
@@ -2144,23 +2138,44 @@ function fireConfetti() {
                   '#C00000', '#548235', '#2E75B6', '#BF8F00'];
   const layer = document.createElement('div');
   layer.className = 'confetti-layer';
+  document.body.appendChild(layer);
+
+  // Use pixel values + the Web Animations API rather than CSS keyframes with
+  // var() — iOS Safari does NOT animate custom properties inside @keyframes,
+  // which left the pieces invisible/static on iPhone.
+  const W = window.innerWidth || 380;
+  const H = window.innerHeight || 700;
   const N = 90;
   for (let i = 0; i < N; i++) {
     const p = document.createElement('div');
     p.className = 'confetti-piece';
     const size = 6 + Math.random() * 6;
-    p.style.left = (Math.random() * 100) + 'vw';
     p.style.width = size + 'px';
     p.style.height = (size * 0.45 + 4) + 'px';
     p.style.background = colors[i % colors.length];
-    p.style.setProperty('--drift', ((Math.random() * 2 - 1) * 140) + 'px');
-    p.style.setProperty('--rot', ((Math.random() * 720) - 360) + 'deg');
-    p.style.animationDuration = (1500 + Math.random() * 1500) + 'ms';
-    p.style.animationDelay = (Math.random() * 250) + 'ms';
     layer.appendChild(p);
+
+    const startX = Math.random() * W;
+    const drift = (Math.random() * 2 - 1) * 140;
+    const rot = (Math.random() * 1080) - 540;
+    const dur = 1600 + Math.random() * 1600;
+    const delay = Math.random() * 250;
+    const fromY = -0.12 * H, toY = 1.15 * H;
+    const frames = [
+      { transform: 'translate(' + startX + 'px,' + fromY + 'px) rotate(0deg)', opacity: 1 },
+      { transform: 'translate(' + (startX + drift) + 'px,' + toY + 'px) rotate(' + rot + 'deg)', opacity: 1 },
+    ];
+    if (p.animate) {
+      p.animate(frames, { duration: dur, delay: delay,
+                          easing: 'cubic-bezier(0.25,0.6,0.4,1)', fill: 'forwards' });
+    } else {
+      // Fallback for very old engines: CSS transition.
+      p.style.transform = frames[0].transform;
+      p.style.transition = 'transform ' + dur + 'ms ease ' + delay + 'ms';
+      requestAnimationFrame(() => { p.style.transform = frames[1].transform; });
+    }
   }
-  document.body.appendChild(layer);
-  setTimeout(() => layer.remove(), 3300);
+  setTimeout(() => layer.remove(), 3600);
 }
 
 // ---------- spin the badge ONLY on a task being checked off ----------
