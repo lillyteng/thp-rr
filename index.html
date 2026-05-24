@@ -797,6 +797,28 @@
     color: var(--accent, #C08010);
     white-space: nowrap;
   }
+  /* Confetti celebration when a rotation is fully checked off */
+  .confetti-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 9999;
+  }
+  .confetti-piece {
+    position: absolute;
+    top: -20px;
+    border-radius: 2px;
+    opacity: 0.95;
+    will-change: transform;
+    animation-name: confetti-fall;
+    animation-timing-function: cubic-bezier(0.25, 0.6, 0.4, 1);
+    animation-fill-mode: forwards;
+  }
+  @keyframes confetti-fall {
+    0%   { transform: translate(0, -10vh) rotate(0deg); }
+    100% { transform: translate(var(--drift, 0px), 110vh) rotate(var(--rot, 360deg)); }
+  }
   .rotation-meta {
     font-size: 12px;
     color: var(--muted);
@@ -1627,6 +1649,11 @@ function renderTasks() {
             if (navigator.vibrate) {
               try { navigator.vibrate(10); } catch (e) {}
             }
+            // Celebrate when this check completes the whole rotation
+            if (rows.length > 0 && rows.every(r => state.checks.has(rowKey(r)))) {
+              if (typeof fireConfetti === 'function') fireConfetti();
+              if (navigator.vibrate) { try { navigator.vibrate([12, 40, 12]); } catch (e) {} }
+            }
           }
           saveChecks();
           const doRender = () => {
@@ -2110,6 +2137,31 @@ renderRotationPicker();
 renderRotationCount();
 renderStatSwitches();
 renderTasks();
+
+// ---------- confetti when a whole rotation is checked off ----------
+function fireConfetti() {
+  const colors = ['#E8A020', '#F5C842', '#0D4F5C', '#5FC8D8',
+                  '#C00000', '#548235', '#2E75B6', '#BF8F00'];
+  const layer = document.createElement('div');
+  layer.className = 'confetti-layer';
+  const N = 90;
+  for (let i = 0; i < N; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    const size = 6 + Math.random() * 6;
+    p.style.left = (Math.random() * 100) + 'vw';
+    p.style.width = size + 'px';
+    p.style.height = (size * 0.45 + 4) + 'px';
+    p.style.background = colors[i % colors.length];
+    p.style.setProperty('--drift', ((Math.random() * 2 - 1) * 140) + 'px');
+    p.style.setProperty('--rot', ((Math.random() * 720) - 360) + 'deg');
+    p.style.animationDuration = (1500 + Math.random() * 1500) + 'ms';
+    p.style.animationDelay = (Math.random() * 250) + 'ms';
+    layer.appendChild(p);
+  }
+  document.body.appendChild(layer);
+  setTimeout(() => layer.remove(), 3300);
+}
 
 // ---------- spin the badge ONLY on a task being checked off ----------
 function spinBadge() {
