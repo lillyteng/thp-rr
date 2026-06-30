@@ -254,6 +254,29 @@
     background: var(--accent, #C08010);
     filter: brightness(0.92);
   }
+  /* Draw attention to the button while it's awaiting a click */
+  .selector-toggle-btn:not(.confirmed) {
+    animation: cta-btn-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes cta-btn-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(232, 160, 32, 0.55); }
+    50%      { box-shadow: 0 0 0 10px rgba(232, 160, 32, 0); }
+  }
+  /* "Click here" itself flashes — bold red <-> bright gold, with a gentle scale */
+  .cta-flash {
+    display: inline-block;
+    font-weight: 800;
+    animation: cta-flash 1.05s ease-in-out infinite;
+  }
+  @keyframes cta-flash {
+    0%, 100% { color: #C00000; transform: scale(1); }
+    50%      { color: #F5C842; transform: scale(1.08); }
+  }
+  .selector-toggle-btn.confirmed .cta-flash {
+    animation: none;
+    color: inherit;
+    transform: none;
+  }
   .menu-version {
     padding: 14px 18px;
     font-size: 13px;
@@ -1062,7 +1085,7 @@
   <div class="today-date" id="todayDate">Today is …</div>
 
   <div class="selector-toggle-row">
-    <button id="selectorToggleBtn" class="selector-toggle-btn">Click here to confirm rotation selection and close the selector</button>
+    <button id="selectorToggleBtn" class="selector-toggle-btn"><span class="cta-flash">Click here</span> to confirm rotation selection and close the selector</button>
   </div>
 
   <div id="selectorBlock">
@@ -1375,10 +1398,10 @@ function applySelectorVisibility() {
   if (state.selectorHidden) {
     block.style.display = 'none';
     btn.textContent = 'Show rotation selector';
-    btn.classList.add('confirmed');     // post-click filled style
+    btn.classList.add('confirmed');     // post-click filled style; stops the CTA flash
   } else {
     block.style.display = '';
-    btn.textContent = 'Click here to confirm rotation selection and close the selector';
+    btn.innerHTML = '<span class="cta-flash">Click here</span> to confirm rotation selection and close the selector';
     btn.classList.remove('confirmed');
   }
 }
