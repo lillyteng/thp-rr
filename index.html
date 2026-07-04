@@ -42,10 +42,10 @@
     --bg: #0E1820;
     --card: #162028;
     --text: #D8ECF2;
-    --muted: #6A8898;
+    --muted: #B0C7D2;      /* brighter so labels like "Today is" read clearly */
     --comment: #B8CDD4;
     --border: #233340;
-    --accent: #1A6478;
+    --accent: #1A6478;     /* kept dark so filled bg + white text stays readable */
     --accent-dark: #0E3A48;
     --gold: #F5C842;
     --gold-light: #FFDD70;
@@ -57,6 +57,19 @@
     --site-mh-bg: #3A1E18;
     --site-qhc-bg: #322014;
   }
+  /* Dark-mode readability: brighten text that used the dark teal --accent
+     (which is fine as a background but too dim as a foreground on a dark bg). */
+  :root[data-theme="dark"] .selector-toggle-btn:not(.confirmed) {
+    color: #7AD4E4;               /* bright cyan text */
+    border-color: #7AD4E4;
+  }
+  :root[data-theme="dark"] .rotation-day-tag {
+    color: #F5C842;               /* gold pops on dark bg */
+  }
+  :root[data-theme="dark"] .search-result-readon b {
+    color: #7AD4E4;
+  }
+  :root[data-theme="dark"] .search-result-empty { color: #B0C7D2; }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; padding: 0; }
   body {
