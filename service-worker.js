@@ -1,5 +1,5 @@
 // THP RR service worker — auto-generated, do not edit by hand.
-const VERSION = '2026-09-19.1789832677';
+const VERSION = '2026-09-25.1790339677';
 const CACHE = 'thp-rr-' + VERSION;
 const PRECACHE_URLS = ['./', './index.html'];
 
